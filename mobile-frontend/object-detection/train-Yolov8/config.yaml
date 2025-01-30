@@ -1,0 +1,8 @@
+
+path: C:\Users\josem\OneDrive\Desktop\EleEYE-YOLOV8\local_env\data  # dataset root dir
+train: images\train  # train images (relative to 'path')
+val: images\train  # val images (relative to 'path')
+
+# Classes
+names:
+  0: Elephant

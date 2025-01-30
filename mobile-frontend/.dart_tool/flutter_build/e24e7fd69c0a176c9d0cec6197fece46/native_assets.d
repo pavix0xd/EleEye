@@ -1,0 +1,1 @@
+ /Users/pavix/IIT/2nd\ YR/SDGP/demo/mobile-frontend/.dart_tool/flutter_build/e24e7fd69c0a176c9d0cec6197fece46/native_assets.yaml: 
