@@ -140,6 +140,12 @@
       "languageVersion": "2.14"
     },
     {
+      "name": "google_identity_services_web",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/google_identity_services_web-0.3.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
       "name": "google_maps",
       "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/google_maps-8.1.1",
       "packageUri": "lib/",
@@ -172,6 +178,36 @@
     {
       "name": "google_maps_flutter_web",
       "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/google_maps_flutter_web-0.5.10",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "google_sign_in",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/google_sign_in-6.2.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "google_sign_in_android",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/google_sign_in_android-6.1.34",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "google_sign_in_ios",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/google_sign_in_ios-5.7.8",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "google_sign_in_platform_interface",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/google_sign_in_platform_interface-2.4.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "google_sign_in_web",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/google_sign_in_web-0.12.4+3",
       "packageUri": "lib/",
       "languageVersion": "3.3"
     },
@@ -404,7 +440,7 @@
       "languageVersion": "3.6"
     }
   ],
-  "generated": "2024-12-25T05:17:15.981084Z",
+  "generated": "2025-02-07T05:44:01.386082Z",
   "generator": "pub",
   "generatorVersion": "3.6.0",
   "flutterRoot": "file:///Users/pavix/development/flutter",

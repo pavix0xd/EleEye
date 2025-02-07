@@ -1,5 +1,5 @@
 import 'package:demo/screens/auth_screen.dart';
-import 'package:demo/screens/map_screen.dart'; 
+import 'package:demo/screens/logout.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +13,7 @@ class IsLoggedIn extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return MapScreen(); 
+            return LogoutScreen(); 
           } else {
             return AuthScreen(); 
           }
