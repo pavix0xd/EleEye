@@ -1,0 +1,92 @@
+# GitHub actions YAML for manually building the 'sub applications' that the latest committed code
+# Belongs to. The Yolo object detection model is omitted as the build phase is different for the 
+# object detection model, compared to the rest of the sub applications. 
+
+# actions/checkout@v3 used in the workflow, checkouts the commit that triggers
+# the workflow. A manually triggered workflow as below doesnt specify a branch,
+# so it will use commits from the branch where the workflow file (build_phase.yaml)
+# resides in, which is the main branch. 
+
+
+name: Build Phase
+
+# Trigger the Build phase manually from
+# GitHub actions UI
+on:
+  workflow_dispatch:
+
+jobs:
+
+  # The filter job examines the repository, to identify which
+  # "sub application" directories have changes
+  filter:
+
+    name: Filter changed Paths
+    runs-on: ubuntu-latest
+    
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      flutter: ${{ steps.filter.outputs.flutter }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Determine Changed paths
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            backend:
+              - 'Community-Report-Backend/**' # will have to update if the directory is renamed
+            flutter:
+              - 'mobile-frontend/**'
+              
+  build_node:
+
+    name: Build Node.JS Backend
+    needs: filter
+    if: ${{ needs.filter.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.JS
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Backend dependencies
+        working-directory: ./Community-Report-Backend
+        run: npm install
+
+      - name: Build Backend with webpack
+        working-directory: ./Community-Report-Backend
+        run: npm run build
+
+  build_flutter:
+
+    name: Build EleEYE mobile application
+    needs: filter
+    if: ${{ needs.filter.outputs.flutter == 'true' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.0'
+
+      - name: Install Flutter Dependencies
+        working-directory: ./mobile-frontend
+        run: flutter pub get
+
+      - name: Build flutter App (APK)
+        working-directory: ./mobile-frontend
+        run: flutter build apk --debug
