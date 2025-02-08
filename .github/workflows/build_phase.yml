@@ -66,6 +66,22 @@ jobs:
         working-directory: ./Community-Report-Backend
         run: npm run build
 
+      - name: Run Node.JS Unit tests
+        working-directory: ./Community-Report-Backend
+        run: |
+          # placeholder for finding test directories
+          # will be changed once the application structure is more
+          # complete
+
+          if [ -d "test" ] && [ "$(ls -A test)" ]; then
+            npm test
+          else
+            echo "::warning :: No unit tests defined for the Backend. Please add unit tests before proceeding"
+            exit 0
+          fi
+
+        
+
   build_flutter:
 
     name: Build EleEYE mobile application
@@ -90,3 +106,16 @@ jobs:
       - name: Build flutter App (APK)
         working-directory: ./mobile-frontend
         run: flutter build apk --debug
+
+
+      - name: Run flutter Unit tests
+        working-directory: ./mobile-frontend
+        run: |
+          # placeholder for finding test directories
+          # will be changed once the application structure is more complete
+          if [ -d "test" ] && [ "$(ls -A test)" ]; then
+            flutter test
+          else
+            echo "::warning :: No unit tests defined for Flutter mobile application. Please add unit tests before proceeding."
+            exit 0
+          fi
