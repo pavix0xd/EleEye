@@ -22,6 +22,8 @@ jobs:
         uses: github/super-linter@v4
         env:
 
+          DEFAULT_BRANCH: main
+
           # if false, only chnaged files are linted.
           # else the entire codebase is linted
           VALIDATE_ALL_CODEBASE: false
