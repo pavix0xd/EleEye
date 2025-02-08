@@ -1,0 +1,33 @@
+name : Source Phase Linting
+
+on :
+  pull_request : 
+    branches : [ main ]
+
+  # restricted with branch protection rules.
+  # Regardless, a push event triggers the linting job
+  # if bypassed. 
+  push :
+    branches : [ main ]
+
+jobs:
+  lint:
+    name: Lint modified or new code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Run super linter
+        uses: github/super-linter@v4
+        env:
+
+          # if false, only chnaged files are linted.
+          # else the entire codebase is linted
+          VALIDATE_ALL_CODEBASE: false
+
+          # Ensures only modified or new files
+          # in the commit/PR are validated
+          VALIDATE_CHANGED_ONLY: true
+
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
