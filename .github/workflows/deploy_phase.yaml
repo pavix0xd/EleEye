@@ -1,0 +1,32 @@
+
+name: Deploy to production server
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  deploy:
+    name: Deploy to GCP Compute Engine
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ secrets.PRODUCTION_URL }} # will be set once server is set up
+    steps:
+      - name: Checkout code from main branch
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }} # will be set once server is set up
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Deploy to Compute engine via GCloud SSH
+        run: |
+          gcloud compute ssh "${{ secrets.GCE_INSTANCE_NAME }}" \
+            --zone="${{ secrets.GCE_ZONE }}" \
+            --comand "cd /placeholder/directory/app && git pull origin main && npm install && npm run build && pm2 restart all"
