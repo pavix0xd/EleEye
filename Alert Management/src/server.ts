@@ -1,23 +1,21 @@
-import express from "express";
-import { Server } from "socket.io";
-import http from "http";
-import { setupAlertRoutes } from "./routes/alertRoutes";  // Import the routes
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
+import { setupAlertRoutes } from './routes/alertRoutes'; // Import your route
+import dotenv from 'dotenv';
+
+dotenv.config();  // Load environment variables from .env file
 
 const app = express();
-const server = http.createServer(app);  // Use HTTP server with Express
-const io = new Server(server, {
-  cors: {
-    origin: "*",  // Allow all connections
-  },
-});
+const server = http.createServer(app);
+const io = new Server(server);
 
-// Middleware
-app.use(express.json());  // Middleware to parse JSON requests
+app.use(express.json()); // Middleware to parse JSON request bodies
 
-// Use the alert routes with WebSocket integration
-app.use("/api/alerts", setupAlertRoutes(io));
+// Set up the route to handle POST /api/alerts
+app.use('/api/alerts', setupAlertRoutes(io));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;  // Use port 5000 or from environment variables
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

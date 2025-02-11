@@ -1,6 +1,6 @@
-import express, { Request, Response } from "express";
-import { Server } from "socket.io";
-import supabase from "../db";  // Import the Supabase client
+import express, { Request, Response } from 'express';
+import { Server } from 'socket.io';
+import supabase from '../db';  // Import the Supabase client
 
 // Define the alertRoutes function to accept `io`
 const router = express.Router();
