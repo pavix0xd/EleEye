@@ -2,9 +2,11 @@
   "name": "community-report-backend",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+"scripts": {
+  "start": "node dist/server.js",
+  "dev":"nodemon --ext ts --exec ts-node src/server.ts"
+
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -17,6 +19,7 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.0",
     "@types/pg": "^8.11.11",
