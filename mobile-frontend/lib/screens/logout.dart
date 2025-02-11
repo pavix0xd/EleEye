@@ -65,7 +65,7 @@ class _LogoutScreenState extends State<LogoutScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => MapPage(), 
+                    builder: (context) => MapPage(), // manually push to the map screen
                   ),
                 );
               },

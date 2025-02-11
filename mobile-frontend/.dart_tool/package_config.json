@@ -230,12 +230,6 @@
       "languageVersion": "3.4"
     },
     {
-      "name": "js",
-      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/js-0.6.7",
-      "packageUri": "lib/",
-      "languageVersion": "2.19"
-    },
-    {
       "name": "leak_tracker",
       "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/leak_tracker-10.0.7",
       "packageUri": "lib/",
@@ -261,21 +255,21 @@
     },
     {
       "name": "location",
-      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/location-7.0.1",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/location-8.0.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "location_platform_interface",
-      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/location_platform_interface-5.0.0",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/location_platform_interface-6.0.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "location_web",
-      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/location_web-5.0.4",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/location_web-6.0.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "matcher",
@@ -440,7 +434,7 @@
       "languageVersion": "3.6"
     }
   ],
-  "generated": "2025-02-08T14:12:32.440221Z",
+  "generated": "2025-02-09T12:22:57.141317Z",
   "generator": "pub",
   "generatorVersion": "3.6.0",
   "flutterRoot": "file:///Users/pavix/development/flutter",
