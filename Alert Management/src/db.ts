@@ -4,6 +4,10 @@ import dotenv from "dotenv";
 // Load environment variables from .env file
 dotenv.config();
 
+// Log the environment variables to verify they're loaded correctly
+ console.log(process.env.SUPABASE_URL);
+ console.log(process.env.SUPABASE_ANON_KEY);
+
 // Check if required environment variables are present
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
   throw new Error("Supabase URL or ANON_KEY is missing from the environment variables.");
