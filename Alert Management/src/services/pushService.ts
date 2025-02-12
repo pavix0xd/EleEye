@@ -1,23 +1,27 @@
 import admin from 'firebase-admin';
 
-const privateKey = JSON.parse("${process.env.FIREBASE_PRIVATE_KEY}");
-
+// Initialize Firebase Admin SDK with your service account
 admin.initializeApp({
   credential: admin.credential.cert({
     projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: privateKey,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   }),
 });
 
 export class PushService {
+  /**
+   * Sends a push notification to a specific user
+   * @param userId The FCM device token of the user
+   * @param message The message to be sent in the notification
+   */
   async send(userId: string, message: string) {
     const payload = {
       notification: {
-        title: 'Alert Notification',
-        body: message,
+        title: 'Alert Notification',  // Title of the notification
+        body: message,               // Message to display in the notification
       },
-      token: userId,  // Assuming userId is the device token
+      token: userId,  // This should be the FCM token of the user’s device
     };
 
     try {
@@ -29,4 +33,3 @@ export class PushService {
     }
   }
 }
-
