@@ -11,12 +11,15 @@ interface Alert {
   location: string;
   confidence: number;
   source: string;
+  alert_type: string;  // New field to specify the alert type (e.g., "community_report" or "object_detection")
+  longitude: number;   // Longitude of the alert
+  latitude: number;    // Latitude of the alert
 }
 
 export function setupAlertRoutes(io: Server) {
   // Create a new alert
   router.post("/", async (req: Request, res: Response) => {
-    const { event_type, location, confidence, source }: Alert = req.body;
+    const { event_type, location, confidence, source, alert_type, longitude, latitude }: Alert = req.body;
 
     try {
       // Insert the new alert into Supabase
@@ -26,7 +29,10 @@ export function setupAlertRoutes(io: Server) {
           event_type,
           location,
           confidence,
-          source
+          source,
+          alert_type,    // Insert the new field for alert type
+          longitude,     // Insert the longitude field
+          latitude       // Insert the latitude field
         }])
         .single();  // Get the inserted row
 
