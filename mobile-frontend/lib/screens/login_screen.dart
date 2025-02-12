@@ -1,31 +1,53 @@
-import 'package:demo/screens/logout.dart';
+import 'package:demo/screens/auth_screen.dart';
 import 'package:flutter/material.dart';
-import 'forgot_pass_screen.dart';
-import 'landing_screen.dart';
+import 'package:demo/screens/signup_screen.dart';
+import 'package:demo/screens/map_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  final VoidCallback showSignUpScreen;
-  const LoginScreen({Key? key, required this.showSignUpScreen}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Get auth service 
+  final authService = AuthScreen(); 
+
+  // Email and password controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  bool _isRememberMeChecked = false;
-  bool _isPasswordVisible = false;
+  // Login button pressed
+  void login() async {
+    // Prepare data
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-  void logIn() {
-    // Simulate successful login and navigate to LogoutScreen
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => LogoutScreen()),
-    );
+    // Call login function
+    try {
+      await authService.signInWithEmailPassword(email, password);
+
+      //if login is successful, the user will be redirected to the map screen
+      if (mounted){
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MapPage()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
+  // Dispose controllers to avoid memory leaks
   @override
   void dispose() {
     _emailController.dispose();
@@ -33,153 +55,69 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // BUILD UI
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF004D40), Color(0xFFD1EEDD)],
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Login"),
       ),
-      constraints: BoxConstraints.expand(),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+      body: SingleChildScrollView( // Prevents overflow on smaller screens
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 40),
+              const SizedBox(height: 50), // Adds some top spacing
 
-              // Back Button
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LandingScreen()),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: 40),
-
-              // Welcome Text
-              Text(
-                "Welcome Back",
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              Text("Hey! Good to see you again", style: TextStyle(fontSize: 16, color: Colors.white70)),
-              SizedBox(height: 40),
-
-              // Email Field
-              Text("Email", style: TextStyle(fontSize: 16, color: Colors.white)),
-              SizedBox(height: 8),
+              // Email field
               TextField(
                 controller: _emailController,
-                decoration: _inputDecoration("Email"),
+                decoration: const InputDecoration(
+                  labelText: "Email",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.emailAddress,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-              // Password Field
-              Text("Password", style: TextStyle(fontSize: 16, color: Colors.white)),
-              SizedBox(height: 8),
+              // Password field
               TextField(
                 controller: _passwordController,
-                obscureText: !_isPasswordVisible,
-                decoration: _inputDecoration("Password").copyWith(
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                decoration: const InputDecoration(
+                  labelText: "Password",
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true, // Hide password text
+              ),
+              const SizedBox(height: 20),
+
+              // Login button
+              ElevatedButton(
+                onPressed: login,
+                child: const Text("Login"),
+              ),
+              const SizedBox(height: 20),
+
+              // Navigate to sign-up page
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SignupScreen()),
+                ),
+                child: const Text(
+                  "Don't have an account? Sign up here",
+                  style: TextStyle(
+                    color: Colors.blue, 
+                    decoration: TextDecoration.underline,
                   ),
                 ),
               ),
-              SizedBox(height: 10),
-
-              // Remember Me & Forgot Password
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Transform.scale(
-                        scale: 1.3,
-                        child: Checkbox(
-                          value: _isRememberMeChecked,
-                          onChanged: (value) => setState(() => _isRememberMeChecked = value ?? false),
-                          activeColor: Colors.teal,
-                          checkColor: Colors.white,
-                        ),
-                      ),
-                      Text("Remember me", style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
-                      );
-                    },
-                    child: Text("Forgot Password?", style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-              SizedBox(height: 30),
-
-              // Log In Button
-              Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal.shade900,
-                    minimumSize: Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                  ),
-                  onPressed: logIn,
-                  child: Text(
-                    'Log In',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-
-              // Sign Up Option
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Don't have an account?  ", style: TextStyle(fontWeight: FontWeight.bold)),
-                  GestureDetector(
-                    onTap: widget.showSignUpScreen,
-                    child: Text(
-                      "Sign Up",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
+              const SizedBox(height: 50), // Adds some bottom spacing
             ],
           ),
         ),
       ),
-    );
-  }
-
-  // Common Input Decoration
-  InputDecoration _inputDecoration(String hintText) {
-    return InputDecoration(
-      filled: true,
-      fillColor: Colors.grey.shade300,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
-      hintText: hintText,
-      contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
     );
   }
 }

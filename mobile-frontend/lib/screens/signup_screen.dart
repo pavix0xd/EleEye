@@ -1,19 +1,58 @@
+import 'package:demo/screens/auth_screen.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {
-  final VoidCallback showLoginScreen;
-  const SignupScreen({Key? key, required this.showLoginScreen}) : super(key: key);
+  const SignupScreen({super.key});
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  // Controllers
+  // Get auth service 
+  final authService = AuthScreen(); // Assuming this is the correct service
+
+  // Email and password controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  // Signup button is pressed
+  void signUp() async {
+    // Prepare data
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+
+    // Check if password and confirm password match
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Passwords do not match'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Call signup function
+    try {
+      await authService.signUpWithEmailPassword(email, password);
+    } 
+    // Catch any errors
+    catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // Dispose controllers to avoid memory leaks
   @override
   void dispose() {
     _emailController.dispose();
@@ -22,213 +61,58 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  void signUp() {
-    if (_emailController.text.trim().isEmpty ||
-        _passwordController.text.trim().isEmpty ||
-        _confirmPasswordController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('All fields are required')),
-      );
-      return;
-    }
-
-    if (passwordConfirmed()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign Up Successful!')),
-      );
-      // Implement your authentication logic here
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Passwords do not match')),
-      );
-    }
-  }
-
-  bool passwordConfirmed() {
-    return _passwordController.text.trim() == _confirmPasswordController.text.trim();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF004D40), // Dark green shade (top)
-            Color(0xFFD1EEDD), // Light green shade (bottom)
-          ],
-        ),
-      ),
-      constraints: BoxConstraints.expand(),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 40),
+    return Scaffold(
+      appBar: AppBar(title: const Text("Signup")),
+      body: SingleChildScrollView( // Prevents overflow on smaller screens
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 50), // Adds some top spacing
 
-                // Back Arrow Button
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.arrow_back_ios,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
+              // Email field
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: "Email",
+                  border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 16),
 
-                SizedBox(height: 40),
-
-                // Hello Text
-                Text(
-                  "Hello there!",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+              // Password field
+              TextField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: "Password",
+                  border: OutlineInputBorder(),
                 ),
-                Text(
-                  "Register below with your details.",
-                  style: TextStyle(fontSize: 16, color: Colors.white70),
-                ),
-                SizedBox(height: 40),
+                obscureText: true, // Hide password text
+              ),
+              const SizedBox(height: 16),
 
-                // Email Field
-                Text("Email", style: TextStyle(fontSize: 16, color: Colors.white)),
-                SizedBox(height: 8),
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.grey.shade300,
-                    border: InputBorder.none,
-                    hintText: 'Email',
-                    contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+              // Confirm Password field (Fixed the wrong controller)
+              TextField(
+                controller: _confirmPasswordController,
+                decoration: const InputDecoration(
+                  labelText: "Confirm Password",
+                  border: OutlineInputBorder(),
                 ),
-                SizedBox(height: 20),
+                obscureText: true, // Hide password text
+              ),
+              const SizedBox(height: 20),
 
-                // Password Field
-                Text("Password", style: TextStyle(fontSize: 16, color: Colors.white)),
-                SizedBox(height: 8),
-                TextField(
-                  obscureText: true,
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.grey.shade300,
-                    border: InputBorder.none,
-                    hintText: 'Password',
-                    contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-
-                // Confirm Password Field
-                Text("Confirm Password", style: TextStyle(fontSize: 16, color: Colors.white)),
-                SizedBox(height: 8),
-                TextField(
-                  obscureText: true,
-                  controller: _confirmPasswordController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.grey.shade300,
-                    border: InputBorder.none,
-                    hintText: 'Confirm Password',
-                    contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 30),
-
-                // Sign Up Button
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: GestureDetector(
-                    onTap: () {
-                      print("Sign Up button tapped");
-                      signUp();
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.teal.shade900,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Sign Up',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 25),
-
-                // Log In Option
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Get started by ",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: widget.showLoginScreen,
-                      child: Text(
-                        'Log in',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              // Signup button
+              ElevatedButton(
+                onPressed: signUp,
+                child: const Text("Sign Up"),
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
         ),
       ),
