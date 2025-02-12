@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -18,9 +17,8 @@ class _ForgotPassScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> passwordReset() async {
-    try {
-      await FirebaseAuth.instance
-          .sendPasswordResetEmail(email: _emailController.text.trim());
+    // Simulated password reset (replace this with actual logic)
+    if (_emailController.text.trim().isNotEmpty) {
       showDialog(
         context: context,
         builder: (context) {
@@ -29,12 +27,12 @@ class _ForgotPassScreenState extends State<ForgotPasswordScreen> {
           );
         },
       );
-    } on FirebaseAuthException catch (e) {
+    } else {
       showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
-            content: Text(e.message.toString()),
+          return const AlertDialog(
+            content: Text('Please enter a valid email address.'),
           );
         },
       );
@@ -45,7 +43,7 @@ class _ForgotPassScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Container(
       // Gradient background
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -55,14 +53,14 @@ class _ForgotPassScreenState extends State<ForgotPasswordScreen> {
           ],
         ),
       ),
-      constraints: BoxConstraints.expand(),
+      constraints: const BoxConstraints.expand(),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          iconTheme: IconThemeData(color: Colors.white),
-          title: Text(
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: const Text(
             'Forgot Password',
             style: TextStyle(color: Colors.white),
           ),
@@ -72,27 +70,26 @@ class _ForgotPassScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
 
               // Instructions
-              Text(
+              const Text(
                 "Enter your Email. We'll send a reset link to your inbox.",
                 style: TextStyle(fontSize: 16, color: Colors.white70),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
 
               // Email Field
-              Text("Email", style: TextStyle(fontSize: 16, color: Colors.white)),
-              SizedBox(height: 8),
+              const Text("Email", style: TextStyle(fontSize: 16, color: Colors.white)),
+              const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.grey.shade300,
-                  border: InputBorder.none, // Remove border
+                  border: InputBorder.none,
                   hintText: 'Enter your email',
-                  contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                  // Rounded edges
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -103,19 +100,19 @@ class _ForgotPassScreenState extends State<ForgotPasswordScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
 
               // Reset Password Button
               Center(
                 child: GestureDetector(
                   onTap: passwordReset,
                   child: Container(
-                    padding: EdgeInsets.all(15),
+                    padding: const EdgeInsets.all(15),
                     decoration: BoxDecoration(
                       color: Colors.teal.shade900,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         'Reset Password',
                         style: TextStyle(

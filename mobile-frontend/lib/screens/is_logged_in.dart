@@ -1,24 +1,32 @@
 import 'package:demo/screens/auth_screen.dart';
-import 'package:demo/screens/logout.dart'; 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:demo/screens/logout.dart';
 import 'package:flutter/material.dart';
 
-class IsLoggedIn extends StatelessWidget {
-  const IsLoggedIn({Key? key}) : super(key: key); 
+class IsLoggedIn extends StatefulWidget {
+  const IsLoggedIn({Key? key}) : super(key: key);
+
+  @override
+  _IsLoggedInState createState() => _IsLoggedInState();
+}
+
+class _IsLoggedInState extends State<IsLoggedIn> {
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Simulating login state, modify this logic as needed
+    Future.delayed(Duration(seconds: 1), () {
+      setState(() {
+        _isLoggedIn = false; // Change this to `true` if user is logged in
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return LogoutScreen(); 
-          } else {
-            return AuthScreen(); 
-          }
-        },
-      ),
+      body: _isLoggedIn ? LogoutScreen() : AuthScreen(),
     );
   }
 }

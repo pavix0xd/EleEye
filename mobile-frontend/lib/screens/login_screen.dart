@@ -1,5 +1,4 @@
 import 'package:demo/screens/logout.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'forgot_pass_screen.dart';
 import 'landing_screen.dart';
@@ -19,57 +18,12 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isRememberMeChecked = false;
   bool _isPasswordVisible = false;
 
-  Future<void> logIn() async {
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LogoutScreen()),
-      );
-    } on FirebaseAuthException catch (e) {
-      String errorMessage;
-
-      switch (e.code) {
-        case 'user-not-found':
-          errorMessage = 'No user found with this email.';
-          break;
-        case 'wrong-password':
-          errorMessage = 'Incorrect password. Please try again.';
-          break;
-        case 'invalid-email':
-          errorMessage = 'Invalid email format.';
-          break;
-        case 'user-disabled':
-          errorMessage = 'This account has been disabled.';
-          break;
-        case 'too-many-requests':
-          errorMessage = 'Too many attempts. Try again later.';
-          break;
-        case 'operation-not-allowed':
-          errorMessage = 'Email/password sign-in is not enabled.';
-          break;
-        default:
-          errorMessage = 'An error occurred: ${e.message}';
-      }
-
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Login Failed'),
-          content: Text(errorMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
+  void logIn() {
+    // Simulate successful login and navigate to LogoutScreen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LogoutScreen()),
+    );
   }
 
   @override

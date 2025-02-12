@@ -1,6 +1,5 @@
 import 'package:demo/screens/login_screen.dart';
 import 'package:demo/screens/map_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LogoutScreen extends StatefulWidget {
@@ -11,7 +10,7 @@ class LogoutScreen extends StatefulWidget {
 }
 
 class _LogoutScreenState extends State<LogoutScreen> {
-  final user = FirebaseAuth.instance.currentUser;
+  final String? userEmail = "user@example.com"; // Replace with actual user data if needed
 
   @override
   Widget build(BuildContext context) {
@@ -20,38 +19,18 @@ class _LogoutScreenState extends State<LogoutScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (user != null)
-              Text('Signed in as ${user!.email!}')
-            else
-              Text('User is not signed in'),
+            Text(userEmail != null ? 'Signed in as $userEmail' : 'User is not signed in'),
             MaterialButton(
-              onPressed: () async {
-                try {
-                  await FirebaseAuth.instance.signOut();
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LoginScreen(
-                        showSignUpScreen: () {},
-                      ),
+              onPressed: () {
+                // Handle sign-out logic here
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LoginScreen(
+                      showSignUpScreen: () {},
                     ),
-                  );
-                } catch (e) {
-                  print('Sign-out error: $e');
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('Error'),
-                      content: Text('Failed to sign out. Please try again.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text('OK'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
+                  ),
+                );
               },
               color: Colors.teal.shade900,
               child: Text(
@@ -65,7 +44,7 @@ class _LogoutScreenState extends State<LogoutScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => MapPage(), // manually push to the map screen
+                    builder: (context) => MapPage(), // Navigate to the map screen
                   ),
                 );
               },
