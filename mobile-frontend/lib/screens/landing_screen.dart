@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'package:demo/screens/is_logged_in.dart';  // Ensure the correct path
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 
@@ -92,7 +90,7 @@ class _LandingScreenState extends State<LandingScreen> with SingleTickerProvider
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => IsLoggedIn()),
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
                     );
                   },
                   child: Text(
