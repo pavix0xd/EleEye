@@ -1,4 +1,5 @@
 import 'package:demo/screens/auth_screen.dart';
+import 'package:demo/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class MapPage extends StatefulWidget {
@@ -9,32 +10,42 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  //get auth service
+  // Get auth service
   final authService = AuthScreen();
 
-  //logout button pressed
-  void logOut()async{
+  // Logout button pressed
+  void logOut() async {
     await authService.signOut();
+    
+    // Redirect user back to login page
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false, // Removes all previous routes
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-
-    // temporary thing: return logged user email.
+    // Temporary: return logged-in user's email.
     final currentEmail = authService.getCurrentUserEmail();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Map"),
-      actions: [
-        //logout button
-        IconButton(
-          onPressed: logOut,
-          icon: const Icon(Icons.logout),
-        )
-      ],),
+      appBar: AppBar(
+        title: const Text("Map"),
+        actions: [
+          // Logout button
+          IconButton(
+            onPressed: logOut,
+            icon: const Icon(Icons.logout),
+          ),
+        ],
+      ),
       body: Center(
         child: Text("Logged in as: $currentEmail"),
-      )
+      ),
     );
   }
 }

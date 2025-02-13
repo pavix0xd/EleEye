@@ -476,6 +476,24 @@
       "languageVersion": "3.5"
     },
     {
+      "name": "uni_links",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/uni_links-0.5.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "uni_links_platform_interface",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/uni_links_platform_interface-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "uni_links_web",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/uni_links_web-0.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "url_launcher",
       "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/url_launcher-6.3.1",
       "packageUri": "lib/",
@@ -572,7 +590,7 @@
       "languageVersion": "3.6"
     }
   ],
-  "generated": "2025-02-12T15:01:22.317104Z",
+  "generated": "2025-02-13T13:53:08.128727Z",
   "generator": "pub",
   "generatorVersion": "3.6.0",
   "flutterRoot": "file:///Users/pavix/development/flutter",

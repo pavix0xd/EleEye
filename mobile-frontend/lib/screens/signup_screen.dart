@@ -1,4 +1,5 @@
 import 'package:demo/screens/auth_screen.dart';
+import 'package:demo/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -9,50 +10,48 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  // Get auth service 
-  final authService = AuthScreen(); // Assuming this is the correct service
-
-  // Email and password controllers
+  final authService = AuthScreen(); // Auth service
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  // Signup button is pressed
   void signUp() async {
-    // Prepare data
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-    final confirmPassword = _confirmPasswordController.text.trim();
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
+  final confirmPassword = _confirmPasswordController.text.trim();
 
-    // Check if password and confirm password match
-    if (password != confirmPassword) {
+  if (password != confirmPassword) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Passwords do not match'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
+
+  try {
+    // Perform sign up
+    await authService.signUpWithEmailPassword(email, password);
+    
+    // Redirect to login screen after successful sign-up
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()), 
+    );
+  } catch (e) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match'),
+        SnackBar(
+          content: Text(e.toString()),
           backgroundColor: Colors.red,
         ),
       );
-      return;
-    }
-
-    // Call signup function
-    try {
-      await authService.signUpWithEmailPassword(email, password);
-    } 
-    // Catch any errors
-    catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
     }
   }
+}
 
-  // Dispose controllers to avoid memory leaks
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -63,56 +62,98 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Signup")),
-      body: SingleChildScrollView( // Prevents overflow on smaller screens
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 50), // Adds some top spacing
-
-              // Email field
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: "Email",
-                  border: OutlineInputBorder(),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF004D40), Color(0xFFD1EEDD)],
+        ),
+      ),
+      constraints: const BoxConstraints.expand(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 40),
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                  onPressed: () => Navigator.pop(context),
                 ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 16),
-
-              // Password field
-              TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 40),
+                const Text(
+                  "Hello there!",
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
-                obscureText: true, // Hide password text
-              ),
-              const SizedBox(height: 16),
-
-              // Confirm Password field (Fixed the wrong controller)
-              TextField(
-                controller: _confirmPasswordController,
-                decoration: const InputDecoration(
-                  labelText: "Confirm Password",
-                  border: OutlineInputBorder(),
+                const Text(
+                  "Register below with your details.",
+                  style: TextStyle(fontSize: 16, color: Colors.white70),
                 ),
-                obscureText: true, // Hide password text
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 40),
+                _buildTextField("Email", _emailController),
+                const SizedBox(height: 20),
+                _buildTextField("Password", _passwordController, isPassword: true),
+                const SizedBox(height: 20),
+                _buildTextField("Confirm Password", _confirmPasswordController, isPassword: true),
+                const SizedBox(height: 30),
+                _buildSignupButton(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-              // Signup button
-              ElevatedButton(
-                onPressed: signUp,
-                child: const Text("Sign Up"),
-              ),
-              const SizedBox(height: 20),
-            ],
+  Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: isPassword,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey.shade300,
+            border: InputBorder.none,
+            hintText: label,
+            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSignupButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+      child: GestureDetector(
+        onTap: signUp,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.teal.shade900,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Center(
+            child: Text(
+              'Sign Up',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
           ),
         ),
       ),

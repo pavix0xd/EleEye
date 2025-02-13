@@ -1,4 +1,5 @@
 import 'package:demo/screens/auth_screen.dart';
+import 'package:demo/screens/forgot_pass_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:demo/screens/signup_screen.dart';
 import 'package:demo/screens/map_screen.dart';
@@ -11,26 +12,23 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Get auth service 
-  final authService = AuthScreen(); 
+  // This is the auth service
+  final authService = AuthScreen();
 
   // Email and password controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // Login button pressed
+  // Password visibility set to false
+  bool _isPasswordVisible = false;
+
   void login() async {
-    // Prepare data
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-
-    // Call login function
     try {
       await authService.signInWithEmailPassword(email, password);
-
-      //if login is successful, the user will be redirected to the map screen
-      if (mounted){
-        Navigator.push(
+      if (mounted) {
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MapPage()),
         );
@@ -47,7 +45,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Dispose controllers to avoid memory leaks
   @override
   void dispose() {
     _emailController.dispose();
@@ -55,69 +52,135 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // BUILD UI
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login"),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF004D40), Color(0xFFD1EEDD)],
+        ),
       ),
-      body: SingleChildScrollView( // Prevents overflow on smaller screens
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
+      constraints: const BoxConstraints.expand(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 50), // Adds some top spacing
+              const SizedBox(height: 80),
+              const Text(
+                "Welcome Back",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const Text(
+                "Hey! Good to see you again",
+                style: TextStyle(fontSize: 16, color: Colors.white70),
+              ),
+              const SizedBox(height: 40),
 
               // Email field
+              const Text("Email", style: TextStyle(fontSize: 16, color: Colors.white)),
+              const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: "Email",
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
+                decoration: _inputDecoration("Email"),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               // Password field
+              const Text("Password", style: TextStyle(fontSize: 16, color: Colors.white)),
+              const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true, // Hide password text
-              ),
-              const SizedBox(height: 20),
-
-              // Login button
-              ElevatedButton(
-                onPressed: login,
-                child: const Text("Login"),
-              ),
-              const SizedBox(height: 20),
-
-              // Navigate to sign-up page
-              GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignupScreen()),
-                ),
-                child: const Text(
-                  "Don't have an account? Sign up here",
-                  style: TextStyle(
-                    color: Colors.blue, 
-                    decoration: TextDecoration.underline,
+                obscureText: !_isPasswordVisible,
+                decoration: _inputDecoration("Password").copyWith(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
                   ),
                 ),
               ),
-              const SizedBox(height: 50), // Adds some bottom spacing
+              const SizedBox(height: 10),
+
+              // Forgot password
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                    );
+                  },
+                  child: const Text(
+                    "Forgot Password?",
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+
+              // Login button
+              Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal.shade900,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  ),
+                  onPressed: login,
+                  child: const Text(
+                    'Log In',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+
+              // Sign up link
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Don't have an account?  ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SignupScreen()),
+                    ),
+                    child: const Text(
+                      "Sign Up",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hintText) {
+    return InputDecoration(
+      filled: true,
+      fillColor: Colors.grey.shade300,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30),
+        borderSide: BorderSide.none,
+      ),
+      hintText: hintText,
+      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
     );
   }
 }

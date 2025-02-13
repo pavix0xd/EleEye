@@ -41,6 +41,7 @@ dependencies:
   location: ^8.0.0
   http: ^1.2.2
   supabase_flutter: ^2.8.3
+  uni_links: ^0.5.1
 
 dev_dependencies:
   flutter_test:
