@@ -106,3 +106,48 @@ class _BottomNavBarState extends State<BottomNavBar> {
     );
   }
 }
+
+// Screens for each navigation item
+class LocationScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text("Location Screen", style: TextStyle(fontSize: 24)),
+      ),
+    );
+  }
+}
+
+class MessagesScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text("Messages Screen", style: TextStyle(fontSize: 24)),
+      ),
+    );
+  }
+}
+
+class CommunityScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text("Community Screen", style: TextStyle(fontSize: 24)),
+      ),
+    );
+  }
+}
+
+class SettingsScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text("Settings Screen", style: TextStyle(fontSize: 24)),
+      ),
+    );
+  }
+}
