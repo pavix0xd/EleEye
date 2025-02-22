@@ -12,25 +12,22 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // This is the auth service
   final authService = AuthScreen();
-
-  // Email and password controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  // Password visibility set to false
   bool _isPasswordVisible = false;
+  bool _isButtonPressed = false;
 
   void login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+
     try {
       await authService.signInWithEmailPassword(email, password);
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const MapPage()),
+          MaterialPageRoute(builder: (context) => MapPage()),
         );
       }
     } catch (e) {
@@ -86,42 +83,22 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 40),
 
               // Email field
-              const Text("Email", style: TextStyle(fontSize: 16, color: Colors.white)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _emailController,
-                decoration: _inputDecoration("Email"),
-              ),
+              _buildTextField("Email", _emailController),
               const SizedBox(height: 20),
 
               // Password field
-              const Text("Password", style: TextStyle(fontSize: 16, color: Colors.white)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _passwordController,
-                obscureText: !_isPasswordVisible,
-                decoration: _inputDecoration("Password").copyWith(
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                  ),
-                ),
-              ),
+              _buildTextField("Password", _passwordController, isPassword: true),
               const SizedBox(height: 10),
 
-              // Forgot password
+              // Forgot password link with press effect
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-                    );
-                  },
+                  onTapDown: (_) => setState(() {}),
+                  onTapUp: (_) => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                  ),
                   child: const Text(
                     "Forgot Password?",
                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -130,30 +107,51 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Login button
+              // Login button with press effect
               Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal.shade900,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                  ),
-                  onPressed: login,
-                  child: const Text(
-                    'Log In',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                child: GestureDetector(
+                  onTapDown: (_) => setState(() => _isButtonPressed = true),
+                  onTapUp: (_) {
+                    setState(() => _isButtonPressed = false);
+                    login();
+                  },
+                  onTapCancel: () => setState(() => _isButtonPressed = false),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 100),
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: _isButtonPressed ? Colors.teal.shade700 : Colors.teal.shade900,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: _isButtonPressed
+                          ? [
+                              BoxShadow(
+                                color: Colors.teal.shade700.withOpacity(0.5),
+                                blurRadius: 10,
+                                spreadRadius: 1,
+                              ),
+                            ]
+                          : [],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Log In',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 30),
 
-              // Sign up link
+              // Sign up link with press effect
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text("Don't have an account?  ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                   GestureDetector(
-                    onTap: () => Navigator.push(
+                    onTapDown: (_) => setState(() {}),
+                    onTapUp: (_) => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const SignupScreen()),
                     ),
@@ -171,16 +169,48 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String hintText) {
-    return InputDecoration(
-      filled: true,
-      fillColor: Colors.grey.shade300,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: BorderSide.none,
-      ),
-      hintText: hintText,
-      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+  // TextField with focus effect
+  Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
+        const SizedBox(height: 8),
+        Focus(
+          child: Builder(
+            builder: (context) {
+              final isFocused = Focus.of(context).hasFocus;
+              return TextField(
+                controller: controller,
+                obscureText: isPassword && !_isPasswordVisible,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: isFocused ? Colors.white : Colors.grey.shade300,
+                  hintText: label,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.teal, width: 2),
+                  ),
+                  suffixIcon: isPassword
+                      ? IconButton(
+                          icon: Icon(
+                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                        )
+                      : null,
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

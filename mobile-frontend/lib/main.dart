@@ -1,25 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // For environment variables
+import 'package:uni_links/uni_links.dart'; // For deep linking
+import 'dart:async';
+
 import 'screens/splash_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter app is initialized
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  await Supabase.initialize( // Initialize Supabase
-    url: "https://ibdtjkzghhjqpbilmggt.supabase.co",
-    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImliZHRqa3pnaGhqcXBiaWxtZ2d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg5OTAwMTksImV4cCI6MjA1NDU2NjAxOX0.7isnrNBjOhpk05ktD3uhX0ycWi-0rL_cdaWoCzdFIfY",
-  );
+  try {
+    await dotenv.load();
+    
+    final String? supabaseUrl = dotenv.env['SUPABASE_URL'];
+    final String? supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
 
-  runApp(EleEYEApp()); 
+    if (supabaseUrl == null || supabaseAnonKey == null) {
+      throw Exception("Missing SUPABASE_URL or SUPABASE_ANON_KEY in .env file.");
+    }
+
+    await Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
+    );
+  } catch (e) {
+    debugPrint("Error initializing Supabase: $e");
+    return; // Exit early if Supabase initialization fails
+  }
+
+  runApp(EleEYEApp());
 }
 
-class EleEYEApp extends StatelessWidget {
+
+class EleEYEApp extends StatefulWidget {
+  @override
+  _EleEYEAppState createState() => _EleEYEAppState();
+}
+
+class _EleEYEAppState extends State<EleEYEApp> {
+  StreamSubscription? _sub;
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'EleEYE App',
-      home: SplashScreen(), // Start with SplashScreen
+      home: SplashScreen(),
     );
   }
 }
