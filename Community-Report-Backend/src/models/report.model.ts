@@ -3,5 +3,6 @@ export interface Report {
     latitude: number;
     longitude: number;
     timestamp?: Date;
+    alert_type?:string;
 }
   
