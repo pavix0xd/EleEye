@@ -1,21 +1,50 @@
+import 'package:demo/screens/auth_screen.dart';
+import 'package:demo/screens/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({Key? key}) : super(key: key);
+  const MapPage({super.key});
 
   @override
-  _MapPageState createState() => _MapPageState();
+  State<MapPage> createState() => _MapPageState();
 }
 
 class _MapPageState extends State<MapPage> {
-  static const LatLng _center = const LatLng(7.9333296, 81.0);
+  // Get auth service
+  final authService = AuthScreen();
+
+  // Logout button pressed
+  void logOut() async {
+    await authService.signOut();
+    
+    // Redirect user back to login page
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false, // Removes all previous routes
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Temporary: return logged-in user's email.
+    final currentEmail = authService.getCurrentUserEmail();
+
     return Scaffold(
-      body: GoogleMap(
-        initialCameraPosition: CameraPosition(target: _center, zoom: 14.0),
+      appBar: AppBar(
+        title: const Text("Map"),
+        actions: [
+          // Logout button
+          IconButton(
+            onPressed: logOut,
+            icon: const Icon(Icons.logout),
+          ),
+        ],
+      ),
+      body: Center(
+        child: Text("Logged in as: $currentEmail"),
       ),
     );
   }

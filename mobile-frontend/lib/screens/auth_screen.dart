@@ -1,30 +1,38 @@
-import 'package:demo/screens/login_screen.dart';
-import 'package:demo/screens/signup_screen.dart'; 
-import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AuthScreen extends StatefulWidget {
-  const AuthScreen({Key? key}) : super(key: key);
+class AuthScreen {
+  final SupabaseClient _supabase = Supabase.instance.client;
 
-  @override
-  State<AuthScreen> createState() => _AuthScreenState();
-}
-
-class _AuthScreenState extends State<AuthScreen> {
-  // Initially, show the login screen
-  bool showLoginScreen = true;
-
-  void toggleScreens() {
-    setState(() {
-      showLoginScreen = !showLoginScreen;
-    });
+  // Sign in with email and password
+  Future<AuthResponse>signInWithEmailPassword(
+    String email,
+    String password,
+  ) async {
+    return await _supabase.auth.signInWithPassword(
+    email:email,
+    password: password,
+    );
+  }
+  // Sign up with email and password
+  Future<AuthResponse> signUpWithEmailPassword(
+    String email,
+    String password,
+  ) async {
+    return await _supabase.auth.signUp(email:email, password: password);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (showLoginScreen) {
-      return LoginScreen(showSignUpScreen: toggleScreens);
-    } else {
-      return SignupScreen(showLoginScreen: toggleScreens);
-    }
+  //Sign out
+
+  Future<void> signOut() async {
+    await _supabase.auth.signOut();
   }
+
+  // Gut user email
+
+  String getCurrentUserEmail() {
+    final session = _supabase.auth.currentSession;
+    final user = session?.user;
+    return user?.email ?? '';
+  }
+
 }
