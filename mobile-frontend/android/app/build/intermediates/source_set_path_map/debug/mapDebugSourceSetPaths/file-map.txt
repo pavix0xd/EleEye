@@ -1,0 +1,7 @@
+com.example.demo.app-pngs-0 /Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/build/generated/res/pngs/debug
+com.example.demo.app-resValues-1 /Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/build/generated/res/resValues/debug
+com.example.demo.app-packageDebugResources-2 /Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
+com.example.demo.app-packageDebugResources-3 /Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
+com.example.demo.app-debug-4 /Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/build/intermediates/merged_res/debug/mergeDebugResources
+com.example.demo.app-debug-5 /Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/debug/res
+com.example.demo.app-main-6 /Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/res

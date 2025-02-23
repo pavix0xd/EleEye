@@ -1,14 +1,14 @@
 plugins {
-    id "com.android.application"
+    id "com.android.application" version "8.6.0"
     id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
-    id "dev.flutter.flutter-gradle-plugin"
+    id "dev.flutter.flutter-gradle-plugin" // Ensure this is applied last
 }
 
 android {
-    namespace = "com.example.EleEye"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    namespace = "com.example.demo"
+    compileSdk = 34  // Replace flutter.compileSdkVersion with a number
+
+    ndkVersion = "25.1.8937393" // Check your NDK version and replace if necessary
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -20,11 +20,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.EleEye"
+        applicationId = "com.example.demo"
         minSdk = 21
         targetSdk = 35
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = 1 // Replace flutter.versionCode with a number
+        versionName = "1.0.0" // Replace flutter.versionName with a string
     }
 
     buildTypes {

@@ -92,6 +92,24 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "firebase_core",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/firebase_core-3.12.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "firebase_core_platform_interface",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/firebase_core_platform_interface-5.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "firebase_core_web",
+      "rootUri": "file:///Users/pavix/.pub-cache/hosted/pub.dev/firebase_core_web-2.21.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
       "name": "flutter",
       "rootUri": "file:///Users/pavix/development/flutter/packages/flutter",
       "packageUri": "lib/",
@@ -596,7 +614,7 @@
       "languageVersion": "3.6"
     }
   ],
-  "generated": "2025-02-22T13:58:58.130469Z",
+  "generated": "2025-02-23T04:12:20.106919Z",
   "generator": "pub",
   "generatorVersion": "3.6.0",
   "flutterRoot": "file:///Users/pavix/development/flutter",
