@@ -32,7 +32,7 @@ class _MapPageState extends State<MapPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Map"),
+        title: const Text("Welcome"),
         actions: [
           IconButton(
             onPressed: logOut, // Correctly calling the logout function

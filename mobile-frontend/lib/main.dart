@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // For environment variables
-import 'package:uni_links/uni_links.dart'; // For deep linking
 import 'dart:async';
 
 import 'screens/splash_screen.dart';
