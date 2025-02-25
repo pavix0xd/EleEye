@@ -2,44 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  final String token;
+  const ResetPasswordScreen({Key? key, required this.token}) : super(key: key);
 
   @override
-  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  _ResetPasswordScreenState createState() => _ResetPasswordScreenState();
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final supabase = Supabase.instance.client;
+  final SupabaseClient supabase = Supabase.instance.client;
 
-  void resetPassword() async {
-    final password = _passwordController.text.trim();
-    final confirmPassword = _confirmPasswordController.text.trim();
+  Future<void> updatePassword() async {
+    final newPassword = _passwordController.text.trim();
 
-    if (password.isEmpty || confirmPassword.isEmpty) {
+    if (newPassword.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter both fields")),
-      );
-      return;
-    }
-
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
+        SnackBar(content: Text('Password must be at least 6 characters')),
       );
       return;
     }
 
     try {
-      await supabase.auth.updateUser(UserAttributes(password: password));
+      await supabase.auth.updateUser(UserAttributes(password: newPassword));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password reset successful!")),
+        SnackBar(content: Text('Password updated successfully!')),
       );
-      Navigator.pop(context); // Redirect to login
-    } catch (e) {
+      Navigator.pop(context);
+    } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text('Error: ${error.toString()}')),
       );
     }
   }
@@ -47,29 +39,24 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Reset Password")),
+      appBar: AppBar(title: Text('Reset Password')),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Enter your new password"),
-            const SizedBox(height: 20),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: "New Password", border: OutlineInputBorder()),
               obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Enter new password',
+                border: OutlineInputBorder(),
+              ),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _confirmPasswordController,
-              decoration: const InputDecoration(labelText: "Confirm Password", border: OutlineInputBorder()),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
+            SizedBox(height: 16),
             ElevatedButton(
-              onPressed: resetPassword,
-              child: const Text("Reset Password"),
+              onPressed: updatePassword,
+              child: Text('Update Password'),
             ),
           ],
         ),

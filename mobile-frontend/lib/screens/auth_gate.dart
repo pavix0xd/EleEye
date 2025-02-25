@@ -28,7 +28,7 @@ class AuthGate extends StatelessWidget {
 
         // If there is a valid session, show MapPage
         if (session != null) {
-          return const MapPage();
+          return MapPage();
         } else {
           // If there is no valid session, show LoginScreen
           return const LoginScreen();
