@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'message_screen.dart';
+import './message_screen.dart';
+
 
 class LocationScreen extends StatelessWidget {
   @override
