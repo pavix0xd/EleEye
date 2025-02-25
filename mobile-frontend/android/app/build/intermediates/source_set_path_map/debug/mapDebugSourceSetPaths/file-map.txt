@@ -42,7 +42,7 @@ com.example.demo.app-jetified-appcompat-resources-1.1.0-40 /Users/pavix/.gradle/
 com.example.demo.app-debug-41 /Users/pavix/.pub-cache/hosted/pub.dev/app_links-6.4.0/android/build/intermediates/packaged_res/debug/packageDebugResources
 com.example.demo.app-debug-42 /Users/pavix/.pub-cache/hosted/pub.dev/firebase_core-3.12.0/android/build/intermediates/packaged_res/debug/packageDebugResources
 com.example.demo.app-debug-43 /Users/pavix/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.24/android/build/intermediates/packaged_res/debug/packageDebugResources
-com.example.demo.app-debug-44 /Users/pavix/.pub-cache/hosted/pub.dev/google_maps_flutter_android-2.14.12/android/build/intermediates/packaged_res/debug/packageDebugResources
+com.example.demo.app-debug-44 /Users/pavix/.pub-cache/hosted/pub.dev/google_maps_flutter_android-2.14.13/android/build/intermediates/packaged_res/debug/packageDebugResources
 com.example.demo.app-debug-45 /Users/pavix/.pub-cache/hosted/pub.dev/location-8.0.0/android/build/intermediates/packaged_res/debug/packageDebugResources
 com.example.demo.app-debug-46 /Users/pavix/.pub-cache/hosted/pub.dev/path_provider_android-2.2.15/android/build/intermediates/packaged_res/debug/packageDebugResources
 com.example.demo.app-debug-47 /Users/pavix/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.6/android/build/intermediates/packaged_res/debug/packageDebugResources
