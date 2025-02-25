@@ -1,0 +1,314 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.demo"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+9        android:targetSdkVersion="35" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:2:5-67
+11-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:2:22-64
+12    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+12-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:3:5-79
+12-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:3:22-76
+13    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+13-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:4:5-81
+13-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:4:22-78
+14    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+14-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:5:5-77
+14-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:5:22-74
+15    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+15-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:6:5-84
+15-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:6:22-82
+16
+17    <!-- Required to query activities that can process text -->
+18    <queries>
+18-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:55:5-60:15
+19        <intent>
+19-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:56:9-59:18
+20            <action android:name="android.intent.action.PROCESS_TEXT" />
+20-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:57:13-73
+20-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:57:21-70
+21
+22            <data android:mimeType="text/plain" />
+22-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:58:13-51
+22-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:58:19-48
+23        </intent>
+24        <!-- Needs to be explicitly declared on Android R+ -->
+25        <package android:name="com.google.android.apps.maps" />
+25-->[com.google.android.gms:play-services-maps:18.2.0] /Users/pavix/.gradle/caches/transforms-3/c312b1596888230328158ebee03ac0f7/transformed/jetified-play-services-maps-18.2.0/AndroidManifest.xml:33:9-64
+25-->[com.google.android.gms:play-services-maps:18.2.0] /Users/pavix/.gradle/caches/transforms-3/c312b1596888230328158ebee03ac0f7/transformed/jetified-play-services-maps-18.2.0/AndroidManifest.xml:33:18-61
+26    </queries>
+27    <!-- Include required permissions for Google Maps API to run. -->
+28    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+28-->[com.google.android.gms:play-services-maps:18.2.0] /Users/pavix/.gradle/caches/transforms-3/c312b1596888230328158ebee03ac0f7/transformed/jetified-play-services-maps-18.2.0/AndroidManifest.xml:23:5-79
+28-->[com.google.android.gms:play-services-maps:18.2.0] /Users/pavix/.gradle/caches/transforms-3/c312b1596888230328158ebee03ac0f7/transformed/jetified-play-services-maps-18.2.0/AndroidManifest.xml:23:22-76
+29
+30    <uses-feature
+30-->[com.google.android.gms:play-services-maps:18.2.0] /Users/pavix/.gradle/caches/transforms-3/c312b1596888230328158ebee03ac0f7/transformed/jetified-play-services-maps-18.2.0/AndroidManifest.xml:26:5-28:35
+31        android:glEsVersion="0x00020000"
+31-->[com.google.android.gms:play-services-maps:18.2.0] /Users/pavix/.gradle/caches/transforms-3/c312b1596888230328158ebee03ac0f7/transformed/jetified-play-services-maps-18.2.0/AndroidManifest.xml:27:9-41
+32        android:required="true" />
+32-->[com.google.android.gms:play-services-maps:18.2.0] /Users/pavix/.gradle/caches/transforms-3/c312b1596888230328158ebee03ac0f7/transformed/jetified-play-services-maps-18.2.0/AndroidManifest.xml:28:9-32
+33
+34    <permission
+34-->[androidx.core:core:1.13.1] /Users/pavix/.gradle/caches/transforms-3/9da96f7dfbb42bc022a6c81dea4d0741/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
+35        android:name="com.example.demo.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+35-->[androidx.core:core:1.13.1] /Users/pavix/.gradle/caches/transforms-3/9da96f7dfbb42bc022a6c81dea4d0741/transformed/core-1.13.1/AndroidManifest.xml:23:9-81
+36        android:protectionLevel="signature" />
+36-->[androidx.core:core:1.13.1] /Users/pavix/.gradle/caches/transforms-3/9da96f7dfbb42bc022a6c81dea4d0741/transformed/core-1.13.1/AndroidManifest.xml:24:9-44
+37
+38    <uses-permission android:name="com.example.demo.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+38-->[androidx.core:core:1.13.1] /Users/pavix/.gradle/caches/transforms-3/9da96f7dfbb42bc022a6c81dea4d0741/transformed/core-1.13.1/AndroidManifest.xml:26:5-97
+38-->[androidx.core:core:1.13.1] /Users/pavix/.gradle/caches/transforms-3/9da96f7dfbb42bc022a6c81dea4d0741/transformed/core-1.13.1/AndroidManifest.xml:26:22-94
+39
+40    <application
+41        android:name="android.app.Application"
+41-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:10:9-42
+42        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+42-->[androidx.core:core:1.13.1] /Users/pavix/.gradle/caches/transforms-3/9da96f7dfbb42bc022a6c81dea4d0741/transformed/core-1.13.1/AndroidManifest.xml:28:18-86
+43        android:extractNativeLibs="true"
+44        android:icon="@mipmap/ic_launcher"
+44-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:11:9-43
+45        android:label="demo" >
+45-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:9:9-29
+46
+47        <!-- Keep only one API_KEY definition -->
+48        <meta-data
+48-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:13:9-15:71
+49            android:name="com.google.android.geo.API_KEY"
+49-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:14:13-58
+50            android:value="AIzaSyAELGA7uZB-5iyxP7n-_K8D2JuP5xoZonY" />
+50-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:15:13-68
+51
+52        <activity
+52-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:17:9-45:20
+53            android:name="com.example.demo.MainActivity"
+53-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:18:13-41
+54            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+54-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:23:13-163
+55            android:exported="true"
+55-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:19:13-36
+56            android:hardwareAccelerated="true"
+56-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:24:13-47
+57            android:launchMode="singleTop"
+57-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:20:13-43
+58            android:taskAffinity=""
+58-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:21:13-36
+59            android:theme="@style/LaunchTheme"
+59-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:22:13-47
+60            android:windowSoftInputMode="adjustResize" >
+60-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:25:13-55
+61
+62            <!--
+63                 Specifies an Android theme to apply to this Activity as soon as
+64                 the Android process has started. This theme is visible to the user
+65                 while the Flutter UI initializes. After that, this theme continues
+66                 to determine the Window background behind the Flutter UI.
+67            -->
+68            <meta-data
+68-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:30:13-32:57
+69                android:name="io.flutter.embedding.android.NormalTheme"
+69-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:31:17-72
+70                android:resource="@style/NormalTheme" />
+70-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:32:17-54
+71
+72            <intent-filter>
+72-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:33:13-36:29
+73                <action android:name="android.intent.action.MAIN" />
+73-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:34:17-69
+73-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:34:25-66
+74
+75                <category android:name="android.intent.category.LAUNCHER" />
+75-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:35:17-77
+75-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:35:27-74
+76            </intent-filter>
+77
+78            <!-- Intent filter for reset password, placed inside activity -->
+79            <intent-filter>
+79-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:39:13-44:29
+80                <action android:name="android.intent.action.VIEW" />
+80-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:40:17-69
+80-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:40:25-66
+81
+82                <category android:name="android.intent.category.DEFAULT" />
+82-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:41:17-76
+82-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:41:27-73
+83                <category android:name="android.intent.category.BROWSABLE" />
+83-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:42:17-78
+83-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:42:27-75
+84
+85                <data
+85-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:58:13-51
+86                    android:host="reset-password"
+86-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:43:69-98
+87                    android:scheme="eleeye17@gmail.com&apos;s Project" />
+87-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:43:23-68
+88            </intent-filter>
+89        </activity>
+90
+91        <!--
+92             Don't delete the meta-data below.
+93             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java
+94        -->
+95        <meta-data
+95-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:49:9-51:33
+96            android:name="flutterEmbedding"
+96-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:50:13-44
+97            android:value="2" />
+97-->/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/src/main/AndroidManifest.xml:51:13-30
+98
+99        <service
+99-->[:location] /Users/pavix/.pub-cache/hosted/pub.dev/location-8.0.0/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:11:9-15:56
+100            android:name="com.lyokone.location.FlutterLocationService"
+100-->[:location] /Users/pavix/.pub-cache/hosted/pub.dev/location-8.0.0/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:12:13-71
+101            android:enabled="true"
+101-->[:location] /Users/pavix/.pub-cache/hosted/pub.dev/location-8.0.0/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:13:13-35
+102            android:exported="false"
+102-->[:location] /Users/pavix/.pub-cache/hosted/pub.dev/location-8.0.0/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:14:13-37
+103            android:foregroundServiceType="location" />
+103-->[:location] /Users/pavix/.pub-cache/hosted/pub.dev/location-8.0.0/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:15:13-53
+104        <service
+104-->[:firebase_core] /Users/pavix/.pub-cache/hosted/pub.dev/firebase_core-3.12.0/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:8:9-12:19
+105            android:name="com.google.firebase.components.ComponentDiscoveryService"
+105-->[:firebase_core] /Users/pavix/.pub-cache/hosted/pub.dev/firebase_core-3.12.0/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:8:18-89
+106            android:directBootAware="true"
+106-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:32:13-43
+107            android:exported="false" >
+107-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:33:13-37
+108            <meta-data
+108-->[:firebase_core] /Users/pavix/.pub-cache/hosted/pub.dev/firebase_core-3.12.0/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:9:13-11:85
+109                android:name="com.google.firebase.components:io.flutter.plugins.firebase.core.FlutterFirebaseCoreRegistrar"
+109-->[:firebase_core] /Users/pavix/.pub-cache/hosted/pub.dev/firebase_core-3.12.0/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:10:17-124
+110                android:value="com.google.firebase.components.ComponentRegistrar" />
+110-->[:firebase_core] /Users/pavix/.pub-cache/hosted/pub.dev/firebase_core-3.12.0/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:11:17-82
+111            <meta-data
+111-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:35:13-37:85
+112                android:name="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar"
+112-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:36:17-109
+113                android:value="com.google.firebase.components.ComponentRegistrar" />
+113-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:37:17-82
+114        </service>
+115
+116        <activity
+116-->[:url_launcher_android] /Users/pavix/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.14/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:8:9-11:74
+117            android:name="io.flutter.plugins.urllauncher.WebViewActivity"
+117-->[:url_launcher_android] /Users/pavix/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.14/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:9:13-74
+118            android:exported="false"
+118-->[:url_launcher_android] /Users/pavix/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.14/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:10:13-37
+119            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" /> <!-- Needs to be explicitly declared on P+ -->
+119-->[:url_launcher_android] /Users/pavix/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.14/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:11:13-71
+120        <uses-library
+120-->[com.google.android.gms:play-services-maps:18.2.0] /Users/pavix/.gradle/caches/transforms-3/c312b1596888230328158ebee03ac0f7/transformed/jetified-play-services-maps-18.2.0/AndroidManifest.xml:39:9-41:40
+121            android:name="org.apache.http.legacy"
+121-->[com.google.android.gms:play-services-maps:18.2.0] /Users/pavix/.gradle/caches/transforms-3/c312b1596888230328158ebee03ac0f7/transformed/jetified-play-services-maps-18.2.0/AndroidManifest.xml:40:13-50
+122            android:required="false" />
+122-->[com.google.android.gms:play-services-maps:18.2.0] /Users/pavix/.gradle/caches/transforms-3/c312b1596888230328158ebee03ac0f7/transformed/jetified-play-services-maps-18.2.0/AndroidManifest.xml:41:13-37
+123
+124        <activity
+124-->[com.google.android.gms:play-services-base:18.5.0] /Users/pavix/.gradle/caches/transforms-3/5f2f93f75824725e6db1b25e92c5a6a4/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:9-173
+125            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+125-->[com.google.android.gms:play-services-base:18.5.0] /Users/pavix/.gradle/caches/transforms-3/5f2f93f75824725e6db1b25e92c5a6a4/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:19-85
+126            android:exported="false"
+126-->[com.google.android.gms:play-services-base:18.5.0] /Users/pavix/.gradle/caches/transforms-3/5f2f93f75824725e6db1b25e92c5a6a4/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:146-170
+127            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+127-->[com.google.android.gms:play-services-base:18.5.0] /Users/pavix/.gradle/caches/transforms-3/5f2f93f75824725e6db1b25e92c5a6a4/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:86-145
+128
+129        <provider
+129-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:23:9-28:39
+130            android:name="com.google.firebase.provider.FirebaseInitProvider"
+130-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:24:13-77
+131            android:authorities="com.example.demo.firebaseinitprovider"
+131-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:25:13-72
+132            android:directBootAware="true"
+132-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:26:13-43
+133            android:exported="false"
+133-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:27:13-37
+134            android:initOrder="100" />
+134-->[com.google.firebase:firebase-common:21.0.0] /Users/pavix/.gradle/caches/transforms-3/8e332bbfa3a634f3b16dd07bb551c2d1/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:28:13-36
+135
+136        <uses-library
+136-->[androidx.window:window:1.2.0] /Users/pavix/.gradle/caches/transforms-3/4a6514d1bbe738271a8194a72aa6b829/transformed/jetified-window-1.2.0/AndroidManifest.xml:23:9-25:40
+137            android:name="androidx.window.extensions"
+137-->[androidx.window:window:1.2.0] /Users/pavix/.gradle/caches/transforms-3/4a6514d1bbe738271a8194a72aa6b829/transformed/jetified-window-1.2.0/AndroidManifest.xml:24:13-54
+138            android:required="false" />
+138-->[androidx.window:window:1.2.0] /Users/pavix/.gradle/caches/transforms-3/4a6514d1bbe738271a8194a72aa6b829/transformed/jetified-window-1.2.0/AndroidManifest.xml:25:13-37
+139        <uses-library
+139-->[androidx.window:window:1.2.0] /Users/pavix/.gradle/caches/transforms-3/4a6514d1bbe738271a8194a72aa6b829/transformed/jetified-window-1.2.0/AndroidManifest.xml:26:9-28:40
+140            android:name="androidx.window.sidecar"
+140-->[androidx.window:window:1.2.0] /Users/pavix/.gradle/caches/transforms-3/4a6514d1bbe738271a8194a72aa6b829/transformed/jetified-window-1.2.0/AndroidManifest.xml:27:13-51
+141            android:required="false" />
+141-->[androidx.window:window:1.2.0] /Users/pavix/.gradle/caches/transforms-3/4a6514d1bbe738271a8194a72aa6b829/transformed/jetified-window-1.2.0/AndroidManifest.xml:28:13-37
+142
+143        <meta-data
+143-->[com.google.android.gms:play-services-basement:18.4.0] /Users/pavix/.gradle/caches/transforms-3/bf351569057a5b34ed1729ea939c2399/transformed/jetified-play-services-basement-18.4.0/AndroidManifest.xml:6:9-122
+144            android:name="com.google.android.gms.version"
+144-->[com.google.android.gms:play-services-basement:18.4.0] /Users/pavix/.gradle/caches/transforms-3/bf351569057a5b34ed1729ea939c2399/transformed/jetified-play-services-basement-18.4.0/AndroidManifest.xml:6:20-65
+145            android:value="@integer/google_play_services_version" />
+145-->[com.google.android.gms:play-services-basement:18.4.0] /Users/pavix/.gradle/caches/transforms-3/bf351569057a5b34ed1729ea939c2399/transformed/jetified-play-services-basement-18.4.0/AndroidManifest.xml:6:66-119
+146
+147        <provider
+147-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/pavix/.gradle/caches/transforms-3/c52cf2b4526d47a883576ec484d74d9a/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:24:9-32:20
+148            android:name="androidx.startup.InitializationProvider"
+148-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/pavix/.gradle/caches/transforms-3/c52cf2b4526d47a883576ec484d74d9a/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:25:13-67
+149            android:authorities="com.example.demo.androidx-startup"
+149-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/pavix/.gradle/caches/transforms-3/c52cf2b4526d47a883576ec484d74d9a/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:26:13-68
+150            android:exported="false" >
+150-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/pavix/.gradle/caches/transforms-3/c52cf2b4526d47a883576ec484d74d9a/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:27:13-37
+151            <meta-data
+151-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/pavix/.gradle/caches/transforms-3/c52cf2b4526d47a883576ec484d74d9a/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
+152                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+152-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/pavix/.gradle/caches/transforms-3/c52cf2b4526d47a883576ec484d74d9a/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
+153                android:value="androidx.startup" />
+153-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/pavix/.gradle/caches/transforms-3/c52cf2b4526d47a883576ec484d74d9a/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
+154            <meta-data
+154-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+155                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+155-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+156                android:value="androidx.startup" />
+156-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+157        </provider>
+158
+159        <receiver
+159-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+160            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+160-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+161            android:directBootAware="false"
+161-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+162            android:enabled="true"
+162-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+163            android:exported="true"
+163-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+164            android:permission="android.permission.DUMP" >
+164-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+165            <intent-filter>
+165-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+166                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+166-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+166-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+167            </intent-filter>
+168            <intent-filter>
+168-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+169                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+169-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+169-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+170            </intent-filter>
+171            <intent-filter>
+171-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+172                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+172-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+172-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+173            </intent-filter>
+174            <intent-filter>
+174-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+175                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+175-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+175-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/pavix/.gradle/caches/transforms-3/625cec713a1ed9ae3c1153bb963d7cf1/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
+176            </intent-filter>
+177        </receiver>
+178    </application>
+179
+180</manifest>

@@ -583,27 +583,6 @@
             </list>
           </value>
         </entry>
-        <entry key="uni_links">
-          <value>
-            <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/uni_links-0.5.1/lib" />
-            </list>
-          </value>
-        </entry>
-        <entry key="uni_links_platform_interface">
-          <value>
-            <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/uni_links_platform_interface-1.0.0/lib" />
-            </list>
-          </value>
-        </entry>
-        <entry key="uni_links_web">
-          <value>
-            <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/uni_links_web-0.1.0/lib" />
-            </list>
-          </value>
-        </entry>
         <entry key="url_launcher">
           <value>
             <list>
@@ -791,9 +770,6 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/term_glyph-1.2.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/test_api-0.7.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/typed_data-1.4.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/uni_links-0.5.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/uni_links_platform_interface-1.0.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/uni_links_web-0.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher-6.3.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.14/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher_ios-6.3.2/lib" />
