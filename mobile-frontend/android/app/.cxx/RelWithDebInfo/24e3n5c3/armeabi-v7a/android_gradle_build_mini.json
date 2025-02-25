@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/pavix/development/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/pavix/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/.cxx/RelWithDebInfo/24e3n5c3/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/pavix/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/.cxx/RelWithDebInfo/24e3n5c3/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

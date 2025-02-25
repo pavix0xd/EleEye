@@ -1,0 +1,2 @@
+/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/.cxx/Debug/2a5j3v2h/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/pavix/IIT/2nd YR/1st Sem/SDGP/EleEye/mobile-frontend/android/app/.cxx/Debug/2a5j3v2h/arm64-v8a/CMakeFiles/rebuild_cache.dir
