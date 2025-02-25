@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-
-
-
-
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -39,44 +34,6 @@ class _MapPageState extends State<MessageScreen> {
     _startLocationUpdates();
   }
 
-=======
-import 'dart:async';
-import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-class MessageScreen extends StatefulWidget {
-  const MessageScreen({Key? key}) : super(key: key);
-
-  @override
-  _MapPageState createState() => _MapPageState();
-}
-
-class _MapPageState extends State<MessageScreen> {
-  static const LatLng _center = LatLng(7.9333296, 81.0);
-
-  LatLng? _currentLocation;
-  LatLng? _markedLocation;
-  List<LatLng> _routePoints = [];
-  LatLng _cameraPosition = _center;
-
-  final Location _location = Location();
-  GoogleMapController? _mapController;
-  Timer? _timer;
-  final Random _random = Random();
-  final String _googleApiKey = "AIzaSyAELGA7uZB-5iyxP7n-_K8D2JuP5xoZonY";
-
-  @override
-  void initState() {
-    super.initState();
-    _currentLocation = _center;
-    _startLocationUpdates();
-  }
-
->>>>>>> 93a92c8 (message screen done)
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -233,8 +190,4 @@ class _MapPageState extends State<MessageScreen> {
     _timer?.cancel();
     super.dispose();
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 93a92c8 (message screen done)
