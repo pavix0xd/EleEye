@@ -1,21 +1,90 @@
 import 'package:flutter/material.dart';
-import 'settings_screen.dart';
+import 'package:flutter/material.dart';
 
-class CommunityScreen extends StatelessWidget {
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: NotificationScreen(),
+    );
+  }
+}
+
+class NotificationScreen extends StatefulWidget {
+  @override
+  _NotificationScreenState createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends State<NotificationScreen> {
+  List<String> notifications = List.generate(
+      10, (index) => "Elephant Sighting!\nLocation: 500m ahead on A12 road");
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Community")),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => SettingsScreen()),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {},
+        ),
+        title: Text("Notifications"),
+        backgroundColor: Colors.green.shade900,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: ListView.builder(
+          itemCount: notifications.length,
+          itemBuilder: (context, index) {
+            return Dismissible(
+              key: Key(notifications[index]),
+              onDismissed: (direction) {
+                setState(() {
+                  notifications.removeAt(index);
+                });
+              },
+              background: Container(color: Colors.red),
+              child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                child: ListTile(
+                  title: Text(
+                    "Elephant Sighting!",
+                    style: TextStyle(
+                        color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text("2 minutes ago\nLocation: 500m ahead on A12 road"),
+                  trailing: IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () {
+                      setState(() {
+                        notifications.removeAt(index);
+                      });
+                    },
+                  ),
+                ),
+              ),
             );
           },
-          child: Text("Go to Inner Screen"),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.location_on), label: "Map"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.email), label: "Notifications"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.group), label: "Community"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.settings), label: "Settings"),
+        ],
+        currentIndex: 1,
+        selectedItemColor: Colors.green.shade900,
       ),
     );
   }

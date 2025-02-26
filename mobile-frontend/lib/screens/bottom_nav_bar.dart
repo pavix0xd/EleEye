@@ -16,7 +16,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final List<Widget> _pages = [
     LocationScreen(),
     MessageScreen(),
-    CommunityScreen(),
+    MyApp(),
     SettingsScreen(),
   ];
 
