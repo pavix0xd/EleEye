@@ -33,7 +33,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           onPressed: () {},
         ),
         title: Text("Notifications"),
-        backgroundColor: Colors.green.shade900,
+        backgroundColor: Colors.teal.shade900,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
