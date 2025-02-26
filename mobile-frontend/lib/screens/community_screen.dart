@@ -22,7 +22,7 @@ class NotificationScreen extends StatefulWidget {
 
 class _NotificationScreenState extends State<NotificationScreen> {
   List<String> notifications = List.generate(
-      10, (index) => "Elephant Sighting!\nLocation: 500m ahead on A12 road");
+      10, (index) => "Elephant Sighting!\nLocation: 500m ahead on Buttala Road");
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +57,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     style: TextStyle(
                         color: Colors.red, fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text("2 minutes ago\nLocation: 500m ahead on A12 road"),
+                  subtitle: Text("2 minutes ago\nLocation: 500m ahead on Buttala Road"),
                   trailing: IconButton(
                     icon: Icon(Icons.close),
                     onPressed: () {
@@ -84,7 +84,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               icon: Icon(Icons.settings), label: "Settings"),
         ],
         currentIndex: 1,
-        selectedItemColor: Colors.green.shade900,
+        selectedItemColor: Colors.teal.shade900,
       ),
     );
   }
