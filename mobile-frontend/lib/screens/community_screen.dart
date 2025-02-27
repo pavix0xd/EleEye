@@ -24,6 +24,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
   List<String> notifications = List.generate(
       10, (index) => "Elephant Sighting!\nLocation: 500m ahead on Buttala Road");
 
+      void _addNotification() {
+    setState(() {
+      notifications.insert(
+          0, "Elephant Sighting!\nLocation: New sighting at ${notifications.length * 100}m ahead on Buttala Road");
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
