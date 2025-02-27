@@ -1,0 +1,56 @@
+name: demo
+description: "A new Flutter project."
+
+# Prevents accidental publishing to pub.dev
+publish_to: 'none'
+
+# Application versioning
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  firebase_core: ^3.12.0
+  shared_preferences: ^2.5.2
+
+  # UI & Styling
+  google_fonts: ^6.2.1
+  cupertino_icons: ^1.0.8
+
+  # Maps & Location Services
+  google_maps_flutter: ^2.10.0
+  location: ^8.0.0
+
+  # Networking & API Calls
+  http: ^1.2.2
+
+  # Supabase for Authentication & Database
+  supabase_flutter: ^2.8.3
+  
+  # Environment Variables
+  flutter_dotenv: ^5.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  change_app_package_name: ^1.1.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/LEYo__1_-removebg-preview.png
+    - assets/google_logo.png
+    - .env
+    - assets/logo2-removebg-preview.png
+
+# Deep Linking Setup:
+# - Ensure `AndroidManifest.xml` contains intent filters.
+# - Ensure `ios/Runner/Info.plist` has the proper URL schemes.
+
+
