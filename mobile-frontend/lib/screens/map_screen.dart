@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:demo/screens/auth_screen.dart';
-import 'package:demo/screens/bottom_nav_bar.dart';
+import 'package:eleeye/screens/auth_screen.dart';
+import 'package:eleeye/screens/bottom_nav_bar.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});

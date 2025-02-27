@@ -1,5 +1,5 @@
-import 'package:demo/screens/auth_screen.dart';
-import 'package:demo/screens/login_screen.dart';
+import 'package:eleeye/screens/auth_screen.dart';
+import 'package:eleeye/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {

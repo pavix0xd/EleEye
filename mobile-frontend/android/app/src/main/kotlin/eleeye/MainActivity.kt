@@ -1,4 +1,4 @@
-package com.mobile-frontend.app
+package com.eleeye.app
 
 import io.flutter.embedding.android.FlutterActivity
 

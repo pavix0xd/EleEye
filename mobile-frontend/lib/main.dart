@@ -1,3 +1,5 @@
+import 'package:eleeye/screens/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -5,9 +7,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/splash_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/bottom_nav_bar.dart';
+import 'firebase_options.dart'; 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   try {
     await dotenv.load();
 
@@ -45,7 +50,7 @@ class _EleEYEAppState extends State<EleEYEApp> {
   void initState() {
     super.initState();
     _loadTheme();
-    _navigateToHome();
+    _navigateToLogin(); // Navigate to the login screen after splash screen
   }
 
   void _loadTheme() async {
@@ -63,11 +68,17 @@ class _EleEYEAppState extends State<EleEYEApp> {
     });
   }
 
-  void _navigateToHome() async {
+  void _navigateToLogin() async {
     await Future.delayed(const Duration(seconds: 3)); // 3-second splash delay
     setState(() {
       _isLoading = false;
     });
+
+    // Navigate to the LoginScreen after splash
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
   }
 
   @override
@@ -79,10 +90,11 @@ class _EleEYEAppState extends State<EleEYEApp> {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       home: _isLoading
-          ? const SplashScreen() // Show SplashScreen first
-          : BottomNavBar(isDarkMode: _isDarkMode, onThemeChanged: _toggleTheme), // Navigate to BottomNavBar after splash
+          ? const SplashScreen()
+          : const LoginScreen(), // Navigate to LoginScreen after splash
       routes: {
         '/settings': (context) => SettingsScreen(onThemeChanged: _toggleTheme, isDarkMode: _isDarkMode),
+        '/bottomNavBar': (context) => BottomNavBar(isDarkMode: _isDarkMode, onThemeChanged: _toggleTheme),
       },
     );
   }

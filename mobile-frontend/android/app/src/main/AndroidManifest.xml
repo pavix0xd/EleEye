@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
 
     <application
-        android:label="demo"
+        android:label="eleeye"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <!-- Keep only one API_KEY definition -->
@@ -40,7 +40,8 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="eleeye17@gmail.com's Project" android:host="reset-password" />
+                <!-- Fixed scheme format -->
+                <data android:scheme="com.eleeye" android:host="reset-password" />
             </intent-filter>
         </activity>
 
