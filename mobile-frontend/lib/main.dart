@@ -1,3 +1,4 @@
+import 'package:eleeye/screens/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -46,6 +47,7 @@ class EleEYEApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final session = Supabase.instance.client.auth.currentSession;
 
     debugPrint("Building UI with theme: ${themeProvider.isDarkMode ? 'Dark' : 'Light'}");
 
@@ -55,10 +57,11 @@ class EleEYEApp extends StatelessWidget {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: SplashScreen(),
+      home: session != null ? const BottomNavBar() : const SplashScreen(),
       routes: {
         '/settings': (context) => SettingsScreen(),
         '/bottomNavBar': (context) => BottomNavBar(),
+        '/login': (context) => const LoginScreen(),
       },
     );
   }
