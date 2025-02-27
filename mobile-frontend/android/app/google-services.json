@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1085725881002",
+    "project_id": "eleeye-15421",
+    "storage_bucket": "eleeye-15421.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1085725881002:android:8a60d4bfcdea7e680796d3",
+        "android_client_info": {
+          "package_name": "com.eleeye.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDXCpvHik8Dg67x1Z186NuJQJexgi-w0U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,8 +1,8 @@
-import 'package:demo/screens/auth_screen.dart';
-import 'package:demo/screens/forgot_pass_screen.dart';
+import 'package:eleeye/screens/auth_screen.dart';
+import 'package:eleeye/screens/forgot_pass_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:demo/screens/signup_screen.dart';
-import 'package:demo/screens/map_screen.dart';
+import 'package:eleeye/screens/signup_screen.dart';
+import 'package:eleeye/screens/map_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

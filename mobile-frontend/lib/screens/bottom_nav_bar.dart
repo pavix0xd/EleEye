@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../screens/location_screen.dart';
 import '../screens/message_screen.dart';
 import '../screens/community_screen.dart';
 import '../screens/settings_screen.dart';
+import '../themes/theme_provider.dart';
 
 class BottomNavBar extends StatefulWidget {
-  final bool isDarkMode;
-  final Function(bool) onThemeChanged;
-
-  const BottomNavBar({Key? key, required this.isDarkMode, required this.onThemeChanged}) : super(key: key);
+  const BottomNavBar({Key? key}) : super(key: key);
 
   @override
   _BottomNavBarState createState() => _BottomNavBarState();
@@ -17,18 +16,12 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   int _selectedIndex = 0;
 
-  late List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      LocationScreen(),
-      MessageScreen(),
-      CommunityScreen(),
-      SettingsScreen(isDarkMode: widget.isDarkMode, onThemeChanged: widget.onThemeChanged),
-    ];
-  }
+  List<Widget> get _pages => [
+         LocationScreen(),
+         MessageScreen(),
+         CommunityScreen(),
+         SettingsScreen(),
+      ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -48,19 +41,22 @@ class _BottomNavBarState extends State<BottomNavBar> {
     }
   }
 
-  Widget _buildSelectedIcon(IconData icon) {
+  Widget _buildSelectedIcon(IconData icon, bool isDarkMode) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: widget.isDarkMode ? Colors.white : const Color.fromARGB(255, 31, 86, 50),
+        color: isDarkMode ? Colors.white : const Color.fromARGB(255, 31, 86, 50),
         shape: BoxShape.circle,
       ),
-      child: Icon(icon, color: widget.isDarkMode ? Colors.black : Colors.white),
+      child: Icon(icon, color: isDarkMode ? Colors.black : Colors.white),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    bool isDarkMode = themeProvider.isDarkMode;
+
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -70,12 +66,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
         ),
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
-            color: widget.isDarkMode ? Colors.black : Colors.white,
+            color: isDarkMode ? Colors.black : Colors.white,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
             ),
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 color: Colors.black26,
                 blurRadius: 10,
@@ -85,9 +81,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
           ),
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
-            backgroundColor: widget.isDarkMode ? Colors.black : Colors.white,
-            selectedItemColor: widget.isDarkMode ? Colors.white : const Color.fromARGB(255, 31, 86, 50),
-            unselectedItemColor: widget.isDarkMode ? Colors.grey[500] : Colors.grey,
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            selectedItemColor: isDarkMode ? Colors.white : const Color.fromARGB(255, 31, 86, 50),
+            unselectedItemColor: isDarkMode ? Colors.grey[500] : Colors.grey,
             showSelectedLabels: false,
             showUnselectedLabels: false,
             currentIndex: _selectedIndex,
@@ -95,26 +91,26 @@ class _BottomNavBarState extends State<BottomNavBar> {
             items: [
               BottomNavigationBarItem(
                 icon: _selectedIndex == 0
-                    ? _buildSelectedIcon(Icons.location_on)
-                    : Icon(Icons.location_on, color: widget.isDarkMode ? Colors.white : Colors.black),
+                    ? _buildSelectedIcon(Icons.location_on, isDarkMode)
+                    : Icon(Icons.location_on, color: isDarkMode ? Colors.white : Colors.black),
                 label: 'Location',
               ),
               BottomNavigationBarItem(
                 icon: _selectedIndex == 1
-                    ? _buildSelectedIcon(Icons.mail)
-                    : Icon(Icons.mail, color: widget.isDarkMode ? Colors.white : Colors.black),
+                    ? _buildSelectedIcon(Icons.mail, isDarkMode)
+                    : Icon(Icons.mail, color: isDarkMode ? Colors.white : Colors.black),
                 label: 'Messages',
               ),
               BottomNavigationBarItem(
                 icon: _selectedIndex == 2
-                    ? _buildSelectedIcon(Icons.groups)
-                    : Icon(Icons.groups, color: widget.isDarkMode ? Colors.white : Colors.black),
+                    ? _buildSelectedIcon(Icons.groups, isDarkMode)
+                    : Icon(Icons.groups, color: isDarkMode ? Colors.white : Colors.black),
                 label: 'Community',
               ),
               BottomNavigationBarItem(
                 icon: _selectedIndex == 3
-                    ? _buildSelectedIcon(Icons.settings)
-                    : Icon(Icons.settings, color: widget.isDarkMode ? Colors.white : Colors.black),
+                    ? _buildSelectedIcon(Icons.settings, isDarkMode)
+                    : Icon(Icons.settings, color: isDarkMode ? Colors.white : Colors.black),
                 label: 'Settings',
               ),
             ],

@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(seconds: 6),
+      duration: const Duration(seconds: 3),
       vsync: this,
     );
 
@@ -46,25 +46,26 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.5, 0.75, curve: Curves.easeInOut),
+        curve: const Interval(0.5, 1.0, curve: Curves.easeInOut), // Extended fill time
       ),
     );
 
     _controller.addListener(() {
-      if (_controller.value >= 0.5 && !_showLoadingBar) {
-        setState(() {
-          _showLoadingBar = true;
-        });
-      }
       if (_controller.value >= 0.25 && _currentLogoIndex == 0) {
         setState(() {
           _currentLogoIndex = 1;
         });
       }
+
+      if (_controller.value >= 0.5 && !_showLoadingBar) {
+        setState(() {
+          _showLoadingBar = true;
+        });
+      }
     });
 
     _controller.forward().whenComplete(() {
-      Future.delayed(const Duration(seconds: 1), () {
+      Future.delayed(const Duration(seconds: 2), () { // Extra wait time
         if (mounted) {
           Navigator.pushReplacement(
             context,
@@ -84,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _currentLogoIndex == 0 ? const Color(0xFF004D40) : Colors.white, // Teal Shade 900 for first screen, then white
+      backgroundColor: _currentLogoIndex == 0 ? const Color(0xFF004D40) : Colors.white, 
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -103,32 +104,34 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 width: 150,
                 height: 10,
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFF00332E), width: 2), // Dark Green border
+                  border: Border.all(color: const Color(0xFF00332E), width: 2),
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(5),
-                  child: Stack(
-                    children: [
-                      AnimatedBuilder(
-                        animation: _liquidFillAnimation,
-                        builder: (context, child) {
-                          return Container(
-                            width: 150 * _liquidFillAnimation.value,
+                  child: AnimatedBuilder(
+                    animation: _liquidFillAnimation,
+                    builder: (context, child) {
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: FractionallySizedBox(
+                          widthFactor: _liquidFillAnimation.value, // Smooth fill effect
+                          child: Container(
+                            height: 10,
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  Color(0xFF004D40), // Teal Shade 900
-                                  Color(0xFF00695C), // A slightly lighter shade
+                                  Color(0xFF004D40), 
+                                  Color(0xFF00695C), 
                                 ],
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

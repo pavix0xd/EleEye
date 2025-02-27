@@ -1,5 +1,5 @@
-import 'package:demo/screens/login_screen.dart';
-import 'package:demo/screens/map_screen.dart';
+import 'package:eleeye/screens/login_screen.dart';
+import 'package:eleeye/screens/map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
