@@ -27,7 +27,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       void _addNotification() {
     setState(() {
       notifications.insert(
-          0, "Elephant Sighting!\nLocation: New sighting at ${notifications.length * 100}m ahead on Buttala Road");
+          0, "Elephant Sighting!\nLocation: New sighting at ${notifications.length * 100}m ahead on Habarana Road");
     });
   }
 
