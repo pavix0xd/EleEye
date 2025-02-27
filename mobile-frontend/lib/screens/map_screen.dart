@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:eleeye/screens/auth_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:eleeye/screens/bottom_nav_bar.dart';
+import 'package:eleeye/themes/theme_provider.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -10,11 +12,12 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  final authService = AuthScreen();
+  final authService = AuthScreen(); // Use an actual AuthService
 
   @override
   Widget build(BuildContext context) {
-    final currentEmail = authService.getCurrentUserEmail();
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final currentEmail = authService.getCurrentUserEmail() ?? "Unknown";
 
     return Scaffold(
       appBar: AppBar(
@@ -30,12 +33,9 @@ class _MapPageState extends State<MapPage> {
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => BottomNavBar(
-                    isDarkMode: false, // or any appropriate value
-                    onThemeChanged: (bool value) {
-                      // handle theme change
-                    },
-                  )),
+                  MaterialPageRoute(
+                    builder: (context) => const BottomNavBar(), // No need to pass theme manually
+                  ),
                 );
               },
               child: const Text("Go to Main App"),
