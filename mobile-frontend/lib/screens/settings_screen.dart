@@ -1,37 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../screens/login_screen.dart';
+import '../themes/theme_provider.dart';
+import '../screens/auth_screen.dart';
 
-class SettingsScreen extends StatefulWidget {
-  final Function(bool) onThemeChanged;
-  final bool isDarkMode;
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
 
-  const SettingsScreen({super.key, required this.onThemeChanged, required this.isDarkMode});
-
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  late bool _isDarkMode;
-
-  @override
-  void initState() {
-    super.initState();
-    _isDarkMode = widget.isDarkMode;
-  }
-
-  void _toggleTheme(bool value) {
-    widget.onThemeChanged(value);
-    setState(() {
-      _isDarkMode = value;
-    });
-  }
-
-  Future<void> _logOut() async {
+  Future<void> _logOut(BuildContext context) async {
     await Supabase.instance.client.auth.signOut();
-    if (mounted) {
+    if (context.mounted) {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -42,15 +21,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final authService = AuthScreen(); // Use an actual AuthService
+    final currentEmail = authService.getCurrentUserEmail() ?? "Unknown";
+
     return Scaffold(
       appBar: AppBar(title: const Text("Settings")),
       body: Column(
         children: [
           ListTile(
+            title: const Text("Logged in as"),
+            subtitle: Text(currentEmail),
+          ),
+          const Divider(),
+          ListTile(
             title: const Text("Dark Mode"),
             trailing: Switch(
-              value: _isDarkMode,
-              onChanged: _toggleTheme,
+              value: themeProvider.isDarkMode,
+              onChanged: (value) {
+                themeProvider.toggleTheme(value);
+                debugPrint("Settings screen theme toggled: $value");
+              },
               activeColor: Colors.teal.shade900,
               activeTrackColor: Colors.teal.shade700,
             ),
@@ -59,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             title: const Text("Logout"),
             leading: const Icon(Icons.logout, color: Colors.red),
-            onTap: _logOut,
+            onTap: () => _logOut(context),
           ),
         ],
       ),

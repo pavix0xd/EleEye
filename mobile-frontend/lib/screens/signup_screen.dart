@@ -1,5 +1,5 @@
-import 'package:demo/screens/auth_screen.dart';
-import 'package:demo/screens/login_screen.dart';
+import 'package:eleeye/screens/auth_screen.dart';
+import 'package:eleeye/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -16,6 +16,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  bool _isButtonPressed = false;
 
   void signUp() async {
     final email = _emailController.text.trim();
@@ -86,12 +87,7 @@ class _SignupScreenState extends State<SignupScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-                onPressed: () => Navigator.pop(context),
-              ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 80),
               const Text(
                 "Hello there!",
                 style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
@@ -103,15 +99,28 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 40),
               _buildTextField("Email", _emailController),
               const SizedBox(height: 20),
-              _buildTextField("Password", _passwordController, isPassword: true, isPasswordVisible: _isPasswordVisible, toggleVisibility: () {
-                setState(() => _isPasswordVisible = !_isPasswordVisible);
-              }),
+              _buildTextField("Password", _passwordController, isPassword: true),
               const SizedBox(height: 20),
-              _buildTextField("Confirm Password", _confirmPasswordController, isPassword: true, isPasswordVisible: _isConfirmPasswordVisible, toggleVisibility: () {
-                setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible);
-              }),
+              _buildTextField("Confirm Password", _confirmPasswordController, isPassword: true),
               const SizedBox(height: 30),
               _buildSignupButton(),
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Already have an account?  ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  GestureDetector(
+                    onTap: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    ),
+                    child: const Text(
+                      "Log In",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -119,42 +128,49 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false, bool isPasswordVisible = false, VoidCallback? toggleVisibility}) {
+  Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
         const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          obscureText: isPassword && !isPasswordVisible,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.grey.shade300,
-            border: InputBorder.none,
-            hintText: label,
-            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide.none,
-            ),
-            suffixIcon: isPassword
-                ? IconButton(
-                    icon: Icon(isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.black54),
-                    onPressed: toggleVisibility,
-                  )
-                : null,
+        Focus(
+          child: Builder(
+            builder: (context) {
+              final isFocused = Focus.of(context).hasFocus;
+              return TextField(
+                controller: controller,
+                obscureText: isPassword && !_isPasswordVisible,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: isFocused ? Colors.white : Colors.white.withOpacity(0.1),
+                  hintText: label,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.teal, width: 2),
+                  ),
+                  suffixIcon: isPassword
+                      ? IconButton(
+                          icon: Icon(
+                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey.shade700,
+                          ),
+                          onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                        )
+                      : null,
+                ),
+              );
+            },
           ),
         ),
       ],
     );
   }
-
-  bool _isButtonPressed = false;
 
   Widget _buildSignupButton() {
     return Center(
