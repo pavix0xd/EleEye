@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -15,19 +16,52 @@ class NotificationItem {
 }
 
 class MessageScreen extends StatefulWidget {
+  const MessageScreen({super.key});
+
   @override
-  _NotificationScreenState createState() => _NotificationScreenState();
+  _MessageScreenState createState() => _MessageScreenState();
 }
 
-class _NotificationScreenState extends State<MessageScreen> {
-  List<NotificationItem> notifications = List.generate(
-    10,
-    (index) => NotificationItem(
-      title: "Elephant Sighting!",
-      description: "Location: 500m ahead on Buttala Road",
-      timestamp: DateTime.now().subtract(Duration(minutes: index * 2)),
-    ),
-  );
+class _MessageScreenState extends State<MessageScreen> {
+  List<NotificationItem> notifications = [];
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Listen for incoming messages in real time
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      setState(() {
+        notifications.add(
+          NotificationItem(
+            title: message.notification?.title ?? "Unknown Alert",
+            description: message.notification?.body ?? "No Description",
+            timestamp: DateTime.now(),
+          ),
+        );
+      });
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Get message passed through navigation
+    final RemoteMessage? message = ModalRoute.of(context)?.settings.arguments as RemoteMessage?;
+    
+    if (message != null) {
+      setState(() {
+        notifications.add(
+          NotificationItem(
+            title: message.notification?.title ?? "Unknown Alert",
+            description: message.notification?.body ?? "No Description",
+            timestamp: DateTime.now(),
+          ),
+        );
+      });
+    }
+  }
 
   void _showUndoSnackbar(NotificationItem removedItem, int index) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -49,52 +83,50 @@ class _NotificationScreenState extends State<MessageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldMessenger( // Ensures the snackbar is properly managed
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: Text("Notifications"),
-          elevation: 0, // Removes shadow for a cleaner look
-        ),
-        body: AnimatedSwitcher(
-          duration: Duration(milliseconds: 300),
-          child: notifications.isEmpty
-              ? Center(child: Text("No Notifications"))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(10.0),
-                  physics: BouncingScrollPhysics(), // Makes scrolling smoother
-                  itemCount: notifications.length,
-                  itemBuilder: (context, index) {
-                    return Dismissible(
-                      key: Key(notifications[index].timestamp.toString()),
-                      direction: DismissDirection.endToStart,
-                      onDismissed: (direction) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text("Notifications"),
+        elevation: 0, // Removes shadow for a cleaner look
+      ),
+      body: AnimatedSwitcher(
+        duration: Duration(milliseconds: 300),
+        child: notifications.isEmpty
+            ? Center(child: Text("No Notifications"))
+            : ListView.builder(
+                padding: const EdgeInsets.all(10.0),
+                physics: BouncingScrollPhysics(), // Smooth scrolling
+                itemCount: notifications.length,
+                itemBuilder: (context, index) {
+                  return Dismissible(
+                    key: Key(notifications[index].timestamp.toString()),
+                    direction: DismissDirection.endToStart,
+                    onDismissed: (direction) {
+                      NotificationItem removedItem = notifications[index];
+                      setState(() {
+                        notifications.removeAt(index);
+                      });
+                      _showUndoSnackbar(removedItem, index);
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: EdgeInsets.only(right: 20),
+                      child: Icon(Icons.delete, color: Colors.white),
+                    ),
+                    child: NotificationTile(
+                      notification: notifications[index],
+                      onRemove: () {
                         NotificationItem removedItem = notifications[index];
                         setState(() {
                           notifications.removeAt(index);
                         });
                         _showUndoSnackbar(removedItem, index);
                       },
-                      background: Container(
-                        color: Colors.red,
-                        alignment: Alignment.centerRight,
-                        padding: EdgeInsets.only(right: 20),
-                        child: Icon(Icons.delete, color: Colors.white),
-                      ),
-                      child: NotificationTile(
-                        notification: notifications[index],
-                        onRemove: () {
-                          NotificationItem removedItem = notifications[index];
-                          setState(() {
-                            notifications.removeAt(index);
-                          });
-                          _showUndoSnackbar(removedItem, index);
-                        },
-                      ),
-                    );
-                  },
-                ),
-        ),
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }

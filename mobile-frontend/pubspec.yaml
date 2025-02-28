@@ -53,6 +53,7 @@ flutter:
     - assets/google_logo.png
     - .env
     - assets/logo2-removebg-preview.png
+    - assets/ele_marker.png
 
 # Deep Linking Setup:
 # - Ensure `AndroidManifest.xml` contains intent filters.
