@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../screens/login_screen.dart';
 import '../themes/theme_provider.dart';
+import '../screens/auth_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -21,11 +22,18 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final authService = AuthScreen(); // Use an actual AuthService
+    final currentEmail = authService.getCurrentUserEmail() ?? "Unknown";
 
     return Scaffold(
       appBar: AppBar(title: const Text("Settings")),
       body: Column(
         children: [
+          ListTile(
+            title: const Text("Logged in as"),
+            subtitle: Text(currentEmail),
+          ),
+          const Divider(),
           ListTile(
             title: const Text("Dark Mode"),
             trailing: Switch(
