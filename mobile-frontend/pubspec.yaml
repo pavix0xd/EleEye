@@ -34,6 +34,8 @@ dependencies:
   # Environment Variables
   flutter_dotenv: ^5.2.1
   firebase_messaging: ^15.2.4
+  fluttertoast: ^8.2.12
+  timeago: ^3.7.0
 
 dev_dependencies:
   flutter_test:
