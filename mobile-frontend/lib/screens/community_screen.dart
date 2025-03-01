@@ -28,14 +28,28 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {},
-        ),
-        title: Text("Notifications"),
-        backgroundColor: Colors.teal.shade900,
-      ),
+     appBar: AppBar(
+  leading: IconButton(
+    icon: Icon(Icons.arrow_back),
+    onPressed: () {
+      Navigator.pop(context);
+    },
+  ),
+  title: Text("Notifications"),
+  backgroundColor: Colors.teal.shade900,
+  actions: [
+    IconButton(
+      icon: Icon(Icons.delete, color: Colors.white), // Clear all button
+      onPressed: () {
+        setState(() {
+          notifications.clear(); // Clears all notifications
+        });
+      },
+    ),
+  ],
+),
+
+      
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: ListView.builder(
