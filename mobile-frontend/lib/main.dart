@@ -1,5 +1,6 @@
 import 'package:eleeye/api/firebase_api.dart';
 import 'package:eleeye/screens/login_screen.dart';
+import 'package:eleeye/screens/message_screen.dart';
 import 'package:eleeye/screens/splash_screen.dart';
 import 'package:eleeye/screens/settings_screen.dart';
 import 'package:eleeye/screens/bottom_nav_bar.dart';
@@ -73,6 +74,7 @@ class EleEYEApp extends StatelessWidget {
         '/settings': (context) => SettingsScreen(),
         '/bottomNavBar': (context) => BottomNavBar(),
         '/login': (context) => const LoginScreen(),
+        '/message_screen': (context) => const MessageScreen(),
       },
     );
   }

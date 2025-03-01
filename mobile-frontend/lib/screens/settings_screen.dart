@@ -1,12 +1,80 @@
 import 'package:eleeye/screens/auth_screen.dart';
+import 'package:eleeye/screens/upload_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../screens/login_screen.dart';
 import '../themes/theme_provider.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  _SettingsScreenState createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+
+  Future<void> _toggleNotification(String key, bool value) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(key, value);
+  setState(() {
+    if (key == "general_notifications") _generalNotifications = value;
+    if (key == "promo_notifications") _promoNotifications = value;
+    if (key == "update_notifications") _updateNotifications = value;
+  });
+}
+
+  bool _generalNotifications = true;
+  bool _promoNotifications = true;
+  bool _updateNotifications = true;
+  bool _securityNotifications = true; // Important alerts (Always ON)
+  String? _profileImageUrl;
+  final SupabaseClient supabase = Supabase.instance.client;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationPreferences();
+    _fetchProfileImage();
+  }
+
+  Future<void> _fetchProfileImage() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final response = await supabase.from('profiles').select('avatar_url').eq('id', userId).single();
+
+    if (mounted) {
+      setState(() {
+        _profileImageUrl = response['avatar_url'];
+      });
+    }
+  }
+
+  Future<void> _loadNotificationPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _generalNotifications = prefs.getBool("general_notifications") ?? true;
+      _promoNotifications = prefs.getBool("promo_notifications") ?? true;
+      _updateNotifications = prefs.getBool("update_notifications") ?? true;
+      _securityNotifications = true;
+    });
+  }
+
+  Future<void> _goToUploadPage() async {
+    final updatedImageUrl = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const UploadPage()),
+    );
+
+    if (updatedImageUrl != null && mounted) {
+      setState(() {
+        _profileImageUrl = updatedImageUrl;
+      });
+    }
+  }
 
   Future<void> _logOut(BuildContext context) async {
     final shouldLogout = await _showLogoutConfirmation(context);
@@ -46,24 +114,39 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final authService = AuthScreen(); 
+    final authService = AuthScreen();
     final currentEmail = authService.getCurrentUserEmail() ?? "Unknown";
 
     return Scaffold(
       appBar: AppBar(title: const Text("Settings")),
       body: ListView(
         children: [
-          _buildUserInfoTile(currentEmail),
+          _buildProfileSection(currentEmail),
           _buildDarkModeToggle(themeProvider),
+          _buildNotificationToggle("General Notifications", Icons.notifications_active, _generalNotifications, "general_notifications"),
+          _buildNotificationToggle("Promotional Notifications", Icons.local_offer, _promoNotifications, "promo_notifications"),
+          _buildNotificationToggle("App Updates", Icons.system_update, _updateNotifications, "update_notifications"),
+          _buildSecurityNotificationToggle(),
           _buildLogoutTile(context),
         ],
       ),
     );
   }
 
-  Widget _buildUserInfoTile(String email) {
+  Widget _buildProfileSection(String email) {
     return ListTile(
-      leading: const Icon(Icons.person, color: Colors.teal),
+      leading: GestureDetector(
+        onTap: _goToUploadPage,
+        child: CircleAvatar(
+          radius: 30,
+          backgroundImage: _profileImageUrl != null
+              ? NetworkImage(_profileImageUrl!)
+              : null,
+          child: _profileImageUrl == null
+              ? const Icon(Icons.person, size: 30)
+              : null,
+        ),
+      ),
       title: const Text("Logged in as"),
       subtitle: Text(email, style: const TextStyle(fontWeight: FontWeight.bold)),
     );
@@ -77,11 +160,30 @@ class SettingsScreen extends StatelessWidget {
         value: themeProvider.isDarkMode,
         onChanged: (value) {
           themeProvider.toggleTheme(value);
-          debugPrint("Settings screen theme toggled: $value");
         },
         activeColor: Colors.teal.shade900,
         activeTrackColor: Colors.teal.shade700,
       ),
+    );
+  }
+
+  Widget _buildNotificationToggle(String title, IconData icon, bool value, String prefKey) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.teal),
+      title: Text(title),
+      trailing: Switch(
+        value: value,
+        onChanged: (newValue) => _toggleNotification(prefKey, newValue),
+        activeColor: Colors.teal.shade900,
+        activeTrackColor: Colors.teal.shade700,
+      ),
+    );
+  }
+
+  Widget _buildSecurityNotificationToggle() {
+    return ListTile(
+      leading: const Icon(Icons.verified_user, color: Colors.teal),
+      title: const Text("Security Alerts (Always ON)"),
     );
   }
 

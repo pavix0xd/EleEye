@@ -36,6 +36,7 @@ dependencies:
   firebase_messaging: ^15.2.4
   fluttertoast: ^8.2.12
   timeago: ^3.7.0
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
