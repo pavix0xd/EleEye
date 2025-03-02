@@ -1,6 +1,8 @@
 import 'package:eleeye/screens/auth_screen.dart';
+import 'package:eleeye/screens/help.dart';
 import 'package:eleeye/screens/upload_page.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,22 +17,11 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-
-  Future<void> _toggleNotification(String key, bool value) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool(key, value);
-  setState(() {
-    if (key == "general_notifications") _generalNotifications = value;
-    if (key == "promo_notifications") _promoNotifications = value;
-    if (key == "update_notifications") _updateNotifications = value;
-  });
-}
-
   bool _generalNotifications = true;
-  bool _promoNotifications = true;
   bool _updateNotifications = true;
-  bool _securityNotifications = true; // Important alerts (Always ON)
+  bool _securityNotifications = true; // Always ON
   String? _profileImageUrl;
+  String _appVersion = "Loading...";
   final SupabaseClient supabase = Supabase.instance.client;
 
   @override
@@ -38,13 +29,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     _loadNotificationPreferences();
     _fetchProfileImage();
+    _fetchAppVersion();
   }
 
   Future<void> _fetchProfileImage() async {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) return;
 
-    final response = await supabase.from('profiles').select('avatar_url').eq('id', userId).single();
+    final response =
+        await supabase.from('profiles').select('avatar_url').eq('id', userId).single();
 
     if (mounted) {
       setState(() {
@@ -53,13 +46,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _fetchAppVersion() async {
+  try {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = "Version ${packageInfo.version} (Build ${packageInfo.buildNumber})";
+      });
+    }
+  } catch (e) {
+    print("Error fetching app version: $e");
+    if (mounted) {
+      setState(() {
+        _appVersion = "Unknown Version";
+      });
+    }
+  }
+}
+
+
   Future<void> _loadNotificationPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _generalNotifications = prefs.getBool("general_notifications") ?? true;
-      _promoNotifications = prefs.getBool("promo_notifications") ?? true;
       _updateNotifications = prefs.getBool("update_notifications") ?? true;
       _securityNotifications = true;
+    });
+  }
+
+  Future<void> _toggleNotification(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+    setState(() {
+      if (key == "general_notifications") _generalNotifications = value;
+      if (key == "update_notifications") _updateNotifications = value;
     });
   }
 
@@ -111,6 +131,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
         false;
   }
 
+  Future<void> _showTurnOffNotificationsWarningDialog(String prefKey) async {
+    return await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Turn Off Notifications"),
+        content: const Text("Turning off notifications may affect your experience. Are you sure?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              _toggleNotification(prefKey, false);
+              Navigator.pop(context);
+            },
+            child: const Text("Turn Off", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -124,9 +167,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildProfileSection(currentEmail),
           _buildDarkModeToggle(themeProvider),
           _buildNotificationToggle("General Notifications", Icons.notifications_active, _generalNotifications, "general_notifications"),
-          _buildNotificationToggle("Promotional Notifications", Icons.local_offer, _promoNotifications, "promo_notifications"),
           _buildNotificationToggle("App Updates", Icons.system_update, _updateNotifications, "update_notifications"),
           _buildSecurityNotificationToggle(),
+          const Divider(),
+          _buildHelpSupportTile(),
+          _buildAppInfoTile(),
+          const Divider(),
           _buildLogoutTile(context),
         ],
       ),
@@ -173,7 +219,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: Text(title),
       trailing: Switch(
         value: value,
-        onChanged: (newValue) => _toggleNotification(prefKey, newValue),
+        onChanged: (newValue) {
+          if (prefKey == "general_notifications" && !newValue) {
+            _showTurnOffNotificationsWarningDialog(prefKey);
+          } else {
+            _toggleNotification(prefKey, newValue);
+          }
+        },
         activeColor: Colors.teal.shade900,
         activeTrackColor: Colors.teal.shade700,
       ),
@@ -184,6 +236,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListTile(
       leading: const Icon(Icons.verified_user, color: Colors.teal),
       title: const Text("Security Alerts (Always ON)"),
+    );
+  }
+
+  Widget _buildHelpSupportTile() {
+    return ListTile(
+      leading: const Icon(Icons.help_outline, color: Colors.green),
+      title: const Text("Help & Support"),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const HelpSupportScreen()),
+        );
+      },
+    );
+  }
+
+  Widget _buildAppInfoTile() {
+    return ListTile(
+      leading: const Icon(Icons.info_outline, color: Colors.orange),
+      title: const Text("App Info"),
+      subtitle: Text(_appVersion), // Dynamically fetched version
     );
   }
 

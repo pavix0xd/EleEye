@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:geolocator/geolocator.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({Key? key}) : super(key: key);
@@ -15,21 +16,20 @@ class CommunityScreen extends StatefulWidget {
 }
 
 class _CommunityScreenState extends State<CommunityScreen> {
-  static const LatLng _center = LatLng(7.9333296, 81.0);
-  LatLng _cameraPosition = _center;
+  LatLng _cameraPosition = const LatLng(6.8868, 79.9187);
 
   final Set<Marker> _markers = {};
   List<LatLng> _routePoints = [];
   BitmapDescriptor? _customMarker;
-
   GoogleMapController? _mapController;
-  final String _backendUrl = "http://localhost:5001/api/reports"; // backend endpoint
+  final String _backendUrl = "http://localhost:5001/api/reports"; // Backend endpoint
 
   @override
   void initState() {
     super.initState();
     _loadCustomMarker();
-    _fetchMarkersFromBackend(); // Fetch existing markers on startup
+    _fetchMarkersFromBackend();
+    _getUserLocation(); // Fetch initial user location
   }
 
   /// Load custom marker image
@@ -77,6 +77,72 @@ class _CommunityScreenState extends State<CommunityScreen> {
     }
   }
 
+  /// Fetch user's initial location and update the camera
+  Future<void> _getUserLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      print("Location services are disabled.");
+      return;
+    }
+
+    // Request location permission
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        print("Location permissions are denied.");
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      print("Location permissions are permanently denied.");
+      return;
+    }
+
+    // Get the current location
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    LatLng userLatLng = LatLng(position.latitude, position.longitude);
+
+    setState(() {
+      _cameraPosition = userLatLng;
+    });
+
+    _mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: userLatLng, zoom: 15.0),
+      ),
+    );
+  }
+
+  /// Track user's real-time movement and update the camera
+  void _trackUserLocation() {
+    Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10, // Update when user moves 10 meters
+      ),
+    ).listen((Position position) {
+      LatLng newLocation = LatLng(position.latitude, position.longitude);
+
+      setState(() {
+        _cameraPosition = newLocation;
+      });
+
+      _mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: newLocation, zoom: 15.0),
+        ),
+      );
+    });
+  }
+
   /// Send new marker to backend
   Future<void> _sendMarkerToBackend(LatLng position) async {
     try {
@@ -117,11 +183,15 @@ class _CommunityScreenState extends State<CommunityScreen> {
         },
         onMapCreated: (GoogleMapController controller) {
           _mapController = controller;
+          _getUserLocation(); // Fetch initial location
+          _trackUserLocation(); // Start tracking movement
         },
         onCameraMove: (CameraPosition position) {
           _cameraPosition = position.target;
         },
         onTap: _addMarker,
+        myLocationEnabled: true, // Enable user's real-time location (blue dot)
+        myLocationButtonEnabled: true, // Show location button
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.refresh),
