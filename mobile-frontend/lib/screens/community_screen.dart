@@ -167,7 +167,23 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+          return Scaffold(
+            appBar: AppBar(
+        title: const Text(
+          "See a Big guy?  Tap where you saw it",
+          style: TextStyle(
+            fontSize: 20
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset(
+              'assets/ele_marker.png',
+            ),
+          ),
+        ],
+      ),
       body: GoogleMap(
         initialCameraPosition:
             CameraPosition(target: _cameraPosition, zoom: 15.0),
