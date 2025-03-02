@@ -39,10 +39,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
   backgroundColor: Colors.teal.shade900,
   actions: [
     IconButton(
-      icon: Icon(Icons.delete, color: Colors.white), // Clear all button
+      icon: Icon(Icons.delete, color: Colors.white), 
       onPressed: () {
         setState(() {
-          notifications.clear(); // Clears all notifications
+          notifications.clear(); 
         });
       },
     ),
