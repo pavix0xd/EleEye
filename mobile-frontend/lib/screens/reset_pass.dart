@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/services.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String token;
@@ -12,34 +13,47 @@ class ResetPasswordScreen extends StatefulWidget {
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _passwordController = TextEditingController();
   final SupabaseClient supabase = Supabase.instance.client;
+  bool _isLoading = false;
+  bool _isPasswordVisible = false;
+  String? _errorMessage;
 
   Future<void> updatePassword() async {
-    final newPassword = _passwordController.text.trim();
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
+    final newPassword = _passwordController.text.trim();
     if (newPassword.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password must be at least 6 characters')),
-      );
+      setState(() {
+        _errorMessage = "Password must be at least 6 characters.";
+        _isLoading = false;
+      });
       return;
     }
 
     try {
       await supabase.auth.updateUser(UserAttributes(password: newPassword));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password updated successfully!')),
+        const SnackBar(content: Text('Password updated successfully!')),
       );
       Navigator.pop(context);
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${error.toString()}')),
-      );
+    } on AuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message;
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Reset Password')),
+      appBar: AppBar(title: const Text('Reset Password')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -47,17 +61,28 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           children: [
             TextField(
               controller: _passwordController,
-              obscureText: true,
+              obscureText: !_isPasswordVisible,
               decoration: InputDecoration(
                 labelText: 'Enter new password',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                  onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                ),
               ),
             ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: updatePassword,
-              child: Text('Update Password'),
-            ),
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+              ),
+            const SizedBox(height: 16),
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: updatePassword,
+                    child: const Text('Update Password'),
+                  ),
           ],
         ),
       ),
