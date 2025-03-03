@@ -70,7 +70,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   title: Text(
                     "Elephant Sighting!",
                     style: TextStyle(
-                        color: Colors.red, fontWeight: FontWeight.bold),
+                        color: const Color.fromARGB(255, 201, 57, 47), fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text("2 minutes ago\nLocation: 500m ahead on Buttala Road"),
                   trailing: IconButton(
