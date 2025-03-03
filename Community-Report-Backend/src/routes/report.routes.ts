@@ -19,6 +19,16 @@ router.get("/reports", async (req, res, next) => {
   }
 });
 
+
+router.delete("/reports/:id", async (req, res, next) => {
+  try {
+    await reportController.deleteReport(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
+
+
 export default router;
 
 

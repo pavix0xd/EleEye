@@ -39,3 +39,20 @@ export const getReports = async (req: Request, res: Response)  : Promise<Respons
   }
 };
 
+export const deleteReport = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from("community_reports")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    return res.status(200).json({ message: "Marker deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting report:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
