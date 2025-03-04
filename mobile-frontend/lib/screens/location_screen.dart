@@ -1,52 +1,59 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:url_launcher/url_launcher.dart'; // For opening Google Maps
+import 'package:web_socket_channel/io.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LocationScreen extends StatefulWidget {
   @override
-  _MapScreenState createState() => _MapScreenState();
+  _LocationScreenState createState() => _LocationScreenState();
 }
 
-class _MapScreenState extends State<LocationScreen> {
+class _LocationScreenState extends State<LocationScreen> {
   late GoogleMapController mapController;
-
   final LatLng _initialPosition = LatLng(7.8731, 80.7718); // Sri Lanka
-  final Set<Marker> _markers = {}; // Markers for elephants & locations
-  final List<LatLng> _elephantLocations = [
-    LatLng(8.03300357030694, 80.75161888210204),
-  ];
+  final Set<Marker> _markers = {}; // Store elephant locations dynamically
+  late IOWebSocketChannel _channel;
 
   @override
   void initState() {
     super.initState();
-    _addElephantMarkers();
+    _initWebSocket();
   }
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
 
-  void _addElephantMarkers() {
-    setState(() {
-      for (var loc in _elephantLocations) {
+  // Initialize WebSocket to get real-time elephant locations
+  void _initWebSocket() {
+    _channel = IOWebSocketChannel.connect("ws://your-backend-server/ws");
+    _channel.stream.listen((message) {
+      final data = jsonDecode(message);
+      final double lat = data['latitude'];
+      final double lng = data['longitude'];
+      final LatLng location = LatLng(lat, lng);
+
+      setState(() {
         _markers.add(
           Marker(
-            markerId: MarkerId(loc.toString()),
-            position: loc,
+            markerId: MarkerId(location.toString()),
+            position: location,
             infoWindow: InfoWindow(
               title: "Elephant Detected",
-              snippet: "${loc.latitude}, ${loc.longitude}",
+              snippet: "${lat}, ${lng}",
             ),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
           ),
         );
-      }
+      });
     });
   }
 
-  // Function to open Google Maps with the current location
+  // Open Google Maps with the user's location
   void _openGoogleMaps() async {
-    String googleUrl = "https://www.google.com/maps/search/?api=1&query=${_initialPosition.latitude},${_initialPosition.longitude}";
+    String googleUrl =
+        "https://www.google.com/maps/search/?api=1&query=${_initialPosition.latitude},${_initialPosition.longitude}";
     if (await canLaunch(googleUrl)) {
       await launch(googleUrl);
     } else {
@@ -57,7 +64,6 @@ class _MapScreenState extends State<LocationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //appBar: AppBar(title: Text('EleEYE Map')),
       body: Stack(
         children: [
           GoogleMap(
@@ -85,5 +91,11 @@ class _MapScreenState extends State<LocationScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _channel.sink.close();
+    super.dispose();
   }
 }
