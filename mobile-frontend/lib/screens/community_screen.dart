@@ -22,7 +22,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
   List<LatLng> _routePoints = [];
   BitmapDescriptor? _customMarker;
   GoogleMapController? _mapController;
-  final String _backendUrl = "http://localhost:5001/api/reports"; // Backend endpoint
+  final String _backendUrl = "http://10.0.2.2:5001/api/reports"; // Backend endpoint
 
   @override
   void initState() {
@@ -30,6 +30,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
     _loadCustomMarker();
     _fetchMarkersFromBackend();
     _getUserLocation(); // Fetch initial user location
+    _trackUserLocation(); // Start tracking user movement
   }
 
   /// Load custom marker image
@@ -57,7 +58,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
       final response = await http.get(Uri.parse(_backendUrl));
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final Map<String, dynamic> decoded = json.decode(response.body);
+        final List<dynamic> data = decoded["reports"]; // Extract the list
+
         setState(() {
           _markers.clear();
           for (var marker in data) {
@@ -65,7 +68,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
               markerId: MarkerId(marker['id'].toString()),
               position: LatLng(marker['latitude'], marker['longitude']),
               icon: _customMarker ?? BitmapDescriptor.defaultMarker,
-              onTap: () => _removeMarker(marker['id'].toString()),
+              onTap: () => _removeMarker(marker['id'].toString()), // Use correct ID
             ));
           }
         });
@@ -82,14 +85,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       print("Location services are disabled.");
       return;
     }
 
-    // Request location permission
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -104,21 +105,23 @@ class _CommunityScreenState extends State<CommunityScreen> {
       return;
     }
 
-    // Get the current location
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      LatLng userLatLng = LatLng(position.latitude, position.longitude);
 
-    LatLng userLatLng = LatLng(position.latitude, position.longitude);
+      setState(() {
+        _cameraPosition = userLatLng;
+      });
 
-    setState(() {
-      _cameraPosition = userLatLng;
-    });
-
-    _mapController?.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(target: userLatLng, zoom: 15.0),
-      ),
-    );
+      _mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: userLatLng, zoom: 15.0),
+        ),
+      );
+    } catch (e) {
+      print("Error getting user location: $e");
+    }
   }
 
   /// Track user's real-time movement and update the camera
@@ -156,7 +159,22 @@ class _CommunityScreenState extends State<CommunityScreen> {
       );
 
       if (response.statusCode == 201) {
-        print("Marker saved successfully!");
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        final newMarkerId = responseData['report'][0]['id']; // Get correct ID
+
+        setState(() {
+          _markers.add(
+            Marker(
+              markerId: MarkerId(newMarkerId.toString()), // Use correct ID
+              position: position,
+              icon: _customMarker ?? BitmapDescriptor.defaultMarker,
+              onTap: () => _removeMarker(newMarkerId.toString()), // Use correct ID
+            ),
+          );
+        });
+
+        print("Marker saved successfully with ID: $newMarkerId");
+        _fetchMarkersFromBackend(); // Refresh markers after adding
       } else {
         print("Failed to save marker");
       }
@@ -165,15 +183,35 @@ class _CommunityScreenState extends State<CommunityScreen> {
     }
   }
 
+  /// Removes a marker when tapped
+  void _removeMarker(String markerId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse("$_backendUrl/$markerId"),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _markers.removeWhere((marker) => marker.markerId.value == markerId);
+        });
+
+        print("Marker deleted successfully");
+        _fetchMarkersFromBackend(); // Refresh markers after deletion
+      } else {
+        print("Failed to delete marker");
+      }
+    } catch (e) {
+      print("Error deleting marker: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-          return Scaffold(
-            appBar: AppBar(
+    return Scaffold(
+      appBar: AppBar(
         title: const Text(
-          "See a Big guy?  Tap where you saw it",
-          style: TextStyle(
-            fontSize: 20
-          ),
+          "See a Big guy? Tap where you saw it",
+          style: TextStyle(fontSize: 20),
         ),
         actions: [
           Padding(
@@ -188,26 +226,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
         initialCameraPosition:
             CameraPosition(target: _cameraPosition, zoom: 15.0),
         markers: _markers,
-        polylines: {
-          if (_routePoints.isNotEmpty)
-            Polyline(
-              polylineId: const PolylineId("route"),
-              color: Colors.blue,
-              width: 5,
-              points: _routePoints,
-            ),
-        },
+        myLocationEnabled: true,
+        myLocationButtonEnabled: true,
         onMapCreated: (GoogleMapController controller) {
           _mapController = controller;
-          _getUserLocation(); // Fetch initial location
-          _trackUserLocation(); // Start tracking movement
-        },
-        onCameraMove: (CameraPosition position) {
-          _cameraPosition = position.target;
         },
         onTap: _addMarker,
-        myLocationEnabled: true, // Enable user's real-time location (blue dot)
-        myLocationButtonEnabled: true, // Show location button
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.refresh),
@@ -218,29 +242,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
   /// Adds a marker when the user taps on the map and sends to backend
   void _addMarker(LatLng position) {
-    final String markerId = position.toString();
-
-    setState(() {
-      _markers.add(
-        Marker(
-          markerId: MarkerId(markerId),
-          position: position,
-          icon: _customMarker ?? BitmapDescriptor.defaultMarker,
-          onTap: () {
-            _removeMarker(markerId);
-          },
-        ),
-      );
-    });
-
-    _sendMarkerToBackend(position); // Send marker to backend
-  }
-
-  /// Removes a marker when tapped
-  void _removeMarker(String markerId) {
-    setState(() {
-      _markers.removeWhere((marker) => marker.markerId.value == markerId);
-      _routePoints.clear();
-    });
+    _sendMarkerToBackend(position);
   }
 }
