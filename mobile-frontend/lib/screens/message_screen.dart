@@ -85,7 +85,7 @@ class _MapPageState extends State<MessageScreen> {
     );
   }
 
-  /// Updates the user's real-time location
+  
   void _startLocationUpdates() {
     _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       if (!mounted) {
@@ -104,7 +104,7 @@ class _MapPageState extends State<MessageScreen> {
     });
   }
 
-  /// Moves smoothly from _currentLocation to target
+  
   void _moveGraduallyTo(LatLng target) {
     const int steps = 20;
     const Duration stepDuration = Duration(milliseconds: 200);
@@ -129,24 +129,24 @@ class _MapPageState extends State<MessageScreen> {
 
       stepCount++;
 
-      // Update the route dynamically if a marker is set
+      
       if (_markedLocation != null) {
         _fetchRoute();
       }
     });
   }
 
-  /// User taps on the map to set a destination marker
+ 
   void _setMarkedLocation(LatLng location) {
     setState(() {
       _markedLocation = location;
     });
 
-    // Fetch road-following route
+   
     _fetchRoute();
   }
 
-  /// Fetches road-following route from Google Directions API
+  
   Future<void> _fetchRoute() async {
     if (_currentLocation == null || _markedLocation == null) return;
 
@@ -154,7 +154,7 @@ class _MapPageState extends State<MessageScreen> {
         "https://maps.googleapis.com/maps/api/directions/json?"
         "origin=${_currentLocation!.latitude},${_currentLocation!.longitude}"
         "&destination=${_markedLocation!.latitude},${_markedLocation!.longitude}"
-        "&mode=driving" // Change to driving, biking, or walking
+        "&mode=driving" 
         "&key=$_googleApiKey";
 
     final response = await http.get(Uri.parse(url));
@@ -178,7 +178,7 @@ class _MapPageState extends State<MessageScreen> {
     }
   }
 
-  /// Moves the camera to the user's current location
+  
   void _moveToUserLocation() {
     if (_currentLocation != null && _mapController != null) {
       _mapController!.animateCamera(
