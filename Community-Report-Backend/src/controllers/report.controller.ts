@@ -45,6 +45,19 @@ export const deleteReport = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
+    // Check if the report exists
+    const { data: existingReport, error: fetchError } = await supabase
+      .from("community_reports")
+      .select("id")
+      .eq("id", id);
+
+    if (fetchError) throw fetchError;
+
+    if (!existingReport || existingReport.length === 0) {
+      return res.status(404).json({ error: "Report not found" });
+    }
+
+    // Proceed with deletion
     const { error } = await supabase
       .from("community_reports")
       .delete()
