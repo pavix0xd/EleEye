@@ -54,31 +54,35 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
   /// Fetch markers from the backend
   Future<void> _fetchMarkersFromBackend() async {
-    try {
-      final response = await http.get(Uri.parse(_backendUrl));
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> decoded = json.decode(response.body);
-        final List<dynamic> data = decoded["reports"]; // Extract the list
-
-        setState(() {
-          _markers.clear();
-          for (var marker in data) {
-            _markers.add(Marker(
-              markerId: MarkerId(marker['id'].toString()),
-              position: LatLng(marker['latitude'], marker['longitude']),
-              icon: _customMarker ?? BitmapDescriptor.defaultMarker,
-              onTap: () => _removeMarker(marker['id'].toString()), // Use correct ID
-            ));
-          }
-        });
-      } else {
-        print("Failed to load markers");
-      }
-    } catch (e) {
-      print("Error fetching markers: $e");
-    }
-  }
+ if (_customMarker == null) {
+   await _loadCustomMarker(); // Ensure custom marker is loaded first
+ }
+ 
+ try {
+   final response = await http.get(Uri.parse(_backendUrl));
+ 
+   if (response.statusCode == 200) {
+     final Map<String, dynamic> decoded = json.decode(response.body);
+     final List<dynamic> data = decoded["reports"];
+ 
+     setState(() {
+       _markers.clear();
+       for (var marker in data) {
+         _markers.add(Marker(
+           markerId: MarkerId(marker['id'].toString()),
+           position: LatLng(marker['latitude'], marker['longitude']),
+           icon: _customMarker ?? BitmapDescriptor.defaultMarker, // Always use custom marker
+           onTap: () => _removeMarker(marker['id'].toString()),
+         ));
+       }
+     });
+   } else {
+     print("Failed to load markers");
+   }
+ } catch (e) {
+   print("Error fetching markers: $e");
+ }
+}
 
   /// Fetch user's initial location and update the camera
   Future<void> _getUserLocation() async {
@@ -147,41 +151,45 @@ class _CommunityScreenState extends State<CommunityScreen> {
   }
 
   /// Send new marker to backend
-  Future<void> _sendMarkerToBackend(LatLng position) async {
-    try {
-      final response = await http.post(
-        Uri.parse(_backendUrl),
-        headers: {"Content-Type": "application/json"},
-        body: json.encode({
-          "latitude": position.latitude,
-          "longitude": position.longitude,
-        }),
-      );
+ Future<void> _sendMarkerToBackend(LatLng position) async {
+ try {
+   final response = await http.post(
+     Uri.parse(_backendUrl),
+     headers: {"Content-Type": "application/json"},
+     body: json.encode({
+       "latitude": position.latitude,
+       "longitude": position.longitude,
+     }),
+   );
+ 
+   if (response.statusCode == 201) {
+     final Map<String, dynamic> responseData = json.decode(response.body);
+ 
+     if (responseData.containsKey('report') && responseData['report'].isNotEmpty) {
+       final newMarkerId = responseData['report'][0]['id'];
+ 
+       setState(() {
+         _markers.add(Marker(
+           markerId: MarkerId(newMarkerId.toString()),
+           position: position,
+           icon: _customMarker ?? BitmapDescriptor.defaultMarker,
+           onTap: () => _removeMarker(newMarkerId.toString()),
+         ));
+       });
+ 
+       print("Marker saved successfully with ID: $newMarkerId");
+       _fetchMarkersFromBackend(); // Refresh markers after adding
+     } else {
+       print("Unexpected response format: $responseData");
+     }
+   } else {
+     print("Failed to save marker");
+   }
+ } catch (e) {
+   print("Error sending marker: $e");
+ }
+}
 
-      if (response.statusCode == 201) {
-        final Map<String, dynamic> responseData = json.decode(response.body);
-        final newMarkerId = responseData['report'][0]['id']; // Get correct ID
-
-        setState(() {
-          _markers.add(
-            Marker(
-              markerId: MarkerId(newMarkerId.toString()), // Use correct ID
-              position: position,
-              icon: _customMarker ?? BitmapDescriptor.defaultMarker,
-              onTap: () => _removeMarker(newMarkerId.toString()), // Use correct ID
-            ),
-          );
-        });
-
-        print("Marker saved successfully with ID: $newMarkerId");
-        _fetchMarkersFromBackend(); // Refresh markers after adding
-      } else {
-        print("Failed to save marker");
-      }
-    } catch (e) {
-      print("Error sending marker: $e");
-    }
-  }
 
   /// Removes a marker when tapped
   void _removeMarker(String markerId) async {
