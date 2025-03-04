@@ -1,21 +1,28 @@
 // src/services/notificationService.ts
 import * as admin from 'firebase-admin';
 import * as path from 'path';
-import supabase from '../db';  // Import the supabase client from db.ts
+import supabase from '../db';  // Ensure supabase client is correctly imported
+import * as dotenv from 'dotenv';
+
+dotenv.config();  // Load .env variables
 
 export class NotificationService {
   constructor() {
-    const serviceAccount = path.join(__dirname, '../config/firebase-adminsdk.json');
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-    console.log('Firebase initialized successfully.');
+    try {
+      const serviceAccount = path.join(__dirname, '../config/firebase-adminsdk.json');
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
+      console.log('Firebase initialized successfully.');
+    } catch (error) {
+      console.error('Error initializing Firebase:', error);
+    }
   }
 
-  // Function to send a push notification
+  // Method to send a push notification to a user using FCM token from Supabase
   async sendPushNotification(userId: string, message: string) {
     try {
-      const userToken = await this.getUserFCMToken(userId);  // Retrieve FCM token
+      const userToken = await this.getUserFCMToken(userId);  // Fetch FCM token
 
       if (!userToken) {
         throw new Error('FCM Token not found for user');
@@ -26,10 +33,9 @@ export class NotificationService {
           title: 'New Notification',
           body: message,
         },
-        token: userToken,  // Use the token from Supabase
+        token: userToken,  // Use token to send the message
       };
 
-      // Send the push notification using Firebase Admin SDK
       const response = await admin.messaging().send(messagePayload);
       console.log('Successfully sent message:', response);
     } catch (error) {
@@ -38,22 +44,23 @@ export class NotificationService {
     }
   }
 
-  // Function to retrieve the FCM token for the user from Supabase
+  // Method to retrieve FCM token for the user from Supabase
   async getUserFCMToken(userId: string): Promise<string | null> {
     console.log(`Retrieving FCM token for userId: ${userId}`);
 
-    // Fetch the token from Supabase (make sure 'users' is your actual table name)
+    // Fetch token from the Supabase users table (make sure the table has fcm_token column)
     const { data, error } = await supabase
       .from('users')  // Make sure 'users' is your table name
-      .select('fcm_token')  // Select the 'fcm_token' column
+      .select('fcm_token')  // Select the fcm_token column
       .eq('user_id', userId)  // Match the user_id column with the provided userId
-      .single();  // Fetch only a single row
+      .single();  // Get a single row
 
     if (error || !data) {
       console.error('Error retrieving FCM token:', error);
       return null;
     }
 
-    return data.fcm_token;  // Return the FCM token
+    console.log('Retrieved FCM token:', data.fcm_token);
+    return data.fcm_token;  // Return the token
   }
 }
