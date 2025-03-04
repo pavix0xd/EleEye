@@ -1,8 +1,9 @@
-import 'package:demo/screens/auth_screen.dart';
-import 'package:demo/screens/forgot_pass_screen.dart';
+import 'package:eleeye/screens/auth_screen.dart';
+import 'package:eleeye/screens/forgot_pass_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:demo/screens/signup_screen.dart';
-import 'package:demo/screens/map_screen.dart';
+import 'package:eleeye/screens/signup_screen.dart';
+import 'package:eleeye/screens/bottom_nav_bar.dart';
+import 'package:flutter/services.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,38 +12,45 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  // This is the auth service
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final authService = AuthScreen();
-
-  // Email and password controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  // Password visibility set to false
   bool _isPasswordVisible = false;
+  bool _isButtonPressed = false;
+  bool _isLoading = false;
 
   void login() async {
+    if (_isLoading) return;
+
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      HapticFeedback.vibrate();
+      _showErrorSnackbar("Please fill in all fields.");
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
     try {
       await authService.signInWithEmailPassword(email, password);
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MapPage()),
-        );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const BottomNavBar()));
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      HapticFeedback.vibrate();
+      _showErrorSnackbar(e.toString());
+    } finally {
+      setState(() => _isLoading = false);
     }
+  }
+
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   @override
@@ -56,114 +64,28 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF004D40), Color(0xFFD1EEDD)],
-        ),
+        gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFF004D40), Color(0xFFD1EEDD)]),
       ),
       constraints: const BoxConstraints.expand(),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 80),
-              const Text(
-                "Welcome Back",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const Text(
-                "Hey! Good to see you again",
-                style: TextStyle(fontSize: 16, color: Colors.white70),
-              ),
+              _buildAnimatedTitle(),
               const SizedBox(height: 40),
-
-              // Email field
-              const Text("Email", style: TextStyle(fontSize: 16, color: Colors.white)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _emailController,
-                decoration: _inputDecoration("Email"),
-              ),
+              _buildTextField("Email", _emailController, TextInputType.emailAddress),
               const SizedBox(height: 20),
-
-              // Password field
-              const Text("Password", style: TextStyle(fontSize: 16, color: Colors.white)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _passwordController,
-                obscureText: !_isPasswordVisible,
-                decoration: _inputDecoration("Password").copyWith(
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                  ),
-                ),
-              ),
+              _buildTextField("Password", _passwordController, TextInputType.visiblePassword, isPassword: true),
               const SizedBox(height: 10),
-
-              // Forgot password
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-                    );
-                  },
-                  child: const Text(
-                    "Forgot Password?",
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
+              _buildForgotPassword(),
               const SizedBox(height: 30),
-
-              // Login button
-              Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal.shade900,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                  ),
-                  onPressed: login,
-                  child: const Text(
-                    'Log In',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ),
-              ),
+              _buildLoginButton(),
               const SizedBox(height: 30),
-
-              // Sign up link
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Don't have an account?  ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SignupScreen()),
-                    ),
-                    child: const Text(
-                      "Sign Up",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
+              _buildSignupOption(),
             ],
           ),
         ),
@@ -171,16 +93,111 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String hintText) {
-    return InputDecoration(
-      filled: true,
-      fillColor: Colors.grey.shade300,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: BorderSide.none,
+  Widget _buildAnimatedTitle() {
+    return TweenAnimationBuilder(
+      duration: const Duration(milliseconds: 800),
+      tween: Tween<double>(begin: 0, end: 1),
+      builder: (context, double value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(offset: Offset(0, (1 - value) * 20), child: child),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text("Welcome Back", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text("Hey! Good to see you again", style: TextStyle(fontSize: 16, color: Colors.white70)),
+        ],
       ),
-      hintText: hintText,
-      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, TextInputType keyboardType, {bool isPassword = false}) {
+    return TweenAnimationBuilder(
+      duration: const Duration(milliseconds: 500),
+      tween: Tween<double>(begin: 0, end: 1),
+      builder: (context, double value, child) {
+        return Opacity(opacity: value, child: child);
+      },
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: isPassword && !_isPasswordVisible,
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.2),
+          hintText: label,
+          hintStyle: const TextStyle(color: Colors.white70),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Colors.teal, width: 2),
+          ),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white70),
+                  onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                )
+              : null,
+        ),
+        style: const TextStyle(color: Colors.white),
+        cursorColor: Colors.white,
+        autofillHints: isPassword ? [AutofillHints.password] : [AutofillHints.email],
+      ),
+    );
+  }
+
+  Widget _buildForgotPassword() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: GestureDetector(
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotPasswordScreen())),
+        child: const Text("Forgot Password?", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isButtonPressed = true),
+      onTapUp: (_) {
+        setState(() => _isButtonPressed = false);
+        login();
+      },
+      onTapCancel: () => setState(() => _isButtonPressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        width: double.infinity,
+        height: 50,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: _isButtonPressed ? [Colors.teal.shade700, Colors.teal.shade800] : [Colors.teal.shade900, Colors.teal.shade700]),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: _isButtonPressed ? [BoxShadow(color: Colors.teal.shade700.withOpacity(0.5), blurRadius: 10, spreadRadius: 1)] : [],
+        ),
+        child: Center(
+          child: _isLoading
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Text("Log In", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignupOption() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text("Don't have an account?  ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupScreen())),
+          child: const Text("Sign Up", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
+      ],
     );
   }
 }

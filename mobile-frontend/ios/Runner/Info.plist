@@ -19,11 +19,20 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>Demo</string>
+    <string>eleeye</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>eleeye17@gmail.com's Project</string>
+            </array>
+        </dict>
+    </array>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
-    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <string>com.eleeye.app</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
@@ -61,6 +70,13 @@
         <key>NSAllowsArbitraryLoads</key>
         <true/>
     </dict>
+
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>tel</string>
+        <string>mailto</string>
+    </array>
+
 
     <key>io.flutter.embedded_views_preview</key>
     <true/>

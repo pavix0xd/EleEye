@@ -1,76 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/services.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  final String token;
+  const ResetPasswordScreen({Key? key, required this.token}) : super(key: key);
 
   @override
-  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  _ResetPasswordScreenState createState() => _ResetPasswordScreenState();
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final supabase = Supabase.instance.client;
+  final SupabaseClient supabase = Supabase.instance.client;
+  bool _isLoading = false;
+  bool _isPasswordVisible = false;
+  String? _errorMessage;
 
-  void resetPassword() async {
-    final password = _passwordController.text.trim();
-    final confirmPassword = _confirmPasswordController.text.trim();
+  Future<void> updatePassword() async {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    if (password.isEmpty || confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter both fields")),
-      );
-      return;
-    }
-
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
-      );
+    final newPassword = _passwordController.text.trim();
+    if (newPassword.length < 6) {
+      setState(() {
+        _errorMessage = "Password must be at least 6 characters.";
+        _isLoading = false;
+      });
       return;
     }
 
     try {
-      await supabase.auth.updateUser(UserAttributes(password: password));
+      await supabase.auth.updateUser(UserAttributes(password: newPassword));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password reset successful!")),
+        const SnackBar(content: Text('Password updated successfully!')),
       );
-      Navigator.pop(context); // Redirect to login
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      Navigator.pop(context);
+    } on AuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message;
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Reset Password")),
+      appBar: AppBar(title: const Text('Reset Password')),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Enter your new password"),
-            const SizedBox(height: 20),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: "New Password", border: OutlineInputBorder()),
-              obscureText: true,
+              obscureText: !_isPasswordVisible,
+              decoration: InputDecoration(
+                labelText: 'Enter new password',
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                  onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                ),
+              ),
             ),
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+              ),
             const SizedBox(height: 16),
-            TextField(
-              controller: _confirmPasswordController,
-              decoration: const InputDecoration(labelText: "Confirm Password", border: OutlineInputBorder()),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: resetPassword,
-              child: const Text("Reset Password"),
-            ),
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: updatePassword,
+                    child: const Text('Update Password'),
+                  ),
           ],
         ),
       ),
