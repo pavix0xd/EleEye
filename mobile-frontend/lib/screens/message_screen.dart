@@ -61,7 +61,7 @@ class _MapPageState extends State<MessageScreen> {
           if (_routePoints.isNotEmpty)
             Polyline(
               polylineId: PolylineId("route"),
-              color: const Color.fromARGB(255, 20, 148, 254),
+              color: const Color.fromARGB(255, 68, 123, 168),
               width: 5,
               points: _routePoints,
             ),
