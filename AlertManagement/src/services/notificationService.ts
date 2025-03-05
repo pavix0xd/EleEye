@@ -1,4 +1,3 @@
-// src/services/notificationService.ts
 import * as admin from 'firebase-admin';
 import * as path from 'path';
 import supabase from '../db';  // Ensure supabase client is correctly imported
@@ -10,9 +9,15 @@ export class NotificationService {
   constructor() {
     try {
       const serviceAccount = path.join(__dirname, '../config/firebase-adminsdk.json');
+      
+      // Load the service account credentials
+      const credentials = require(serviceAccount);
+
+      // Initialize Firebase Admin SDK with credentials
       admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
+        credential: admin.credential.cert(credentials),
       });
+
       console.log('Firebase initialized successfully.');
     } catch (error) {
       console.error('Error initializing Firebase:', error);
@@ -50,13 +55,13 @@ export class NotificationService {
 
     // Fetch token from the Supabase users table (make sure the table has fcm_token column)
     const { data, error } = await supabase
-      .from('users')  // Make sure 'users' is your table name
+      .from('userInfo')  // Make sure 'userInfo' is your table name (change if needed)
       .select('fcm_token')  // Select the fcm_token column
       .eq('user_id', userId)  // Match the user_id column with the provided userId
       .single();  // Get a single row
 
     if (error || !data) {
-      console.error('Error retrieving FCM token:', error);
+      console.error('Error retrieving FCM token:', error || 'No data found');
       return null;
     }
 

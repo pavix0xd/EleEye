@@ -1,14 +1,11 @@
-import * as admin from 'firebase-admin';
-import * as path from 'path';
-import * as dotenv from 'dotenv';
+const admin = require('firebase-admin');
+const path = require('path');
 
-dotenv.config();  // Load environment variables from .env file
-
-// Initialize Firebase Admin SDK
-const serviceAccount = JSON.parse(process.env.FIREBASE_PRIVATE_KEY as string);
-
+// Initialize Firebase Admin with the correct path to your service account JSON
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(path.resolve(__dirname, './eleeye-15421-firebase-adminsdk-fbsvc-44983132d7.json')),
 });
 
-console.log('Firebase initialized successfully.');
+module.exports = admin; // Export the Firebase Admin module
+
+
