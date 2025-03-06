@@ -78,7 +78,7 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   void _setupSocketConnection() {
-    socket = io.io('http://your-backend-url.com', <String, dynamic>{
+    socket = io.io('http://10.0.2.2:5003', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
     });
@@ -86,6 +86,13 @@ class _LocationScreenState extends State<LocationScreen> {
     socket.onConnect((_) => print('Connected to WebSocket'));
     socket.on('elephant_locations', (data) => _updateElephantMarkers(data));
     socket.onDisconnect((_) => print('Disconnected from WebSocket'));
+
+    socket.onConnect((_) {
+  print('Connected to WebSocket');
+});
+socket.onDisconnect((_) {
+  print('Disconnected from WebSocket');
+});
   }
 
   Future<void> _fetchNearbyElephants() async {
@@ -93,7 +100,7 @@ class _LocationScreenState extends State<LocationScreen> {
 
     try {
       final response = await http.get(Uri.parse(
-          'http://your-backend-url.com/elephants/nearby?latitude=${_currentLocation!.latitude}&longitude=${_currentLocation!.longitude}'));
+          'http://10.0.2.2:5003/elephants/nearby?latitude=${_currentLocation!.latitude}&longitude=${_currentLocation!.longitude}'));
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
