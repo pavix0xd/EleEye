@@ -1,5 +1,6 @@
-import json, fileinput, sys, argparse, os, cv2, xml.etree.ElementTree as ET
+import json, fileinput, sys, argparse, os, cv2, shutil, xml.etree.ElementTree as ET
 from tqdm import tqdm
+from loguru import logger
 
 def parse_voc_annotation(xml_file: str) -> list[dict[str, any]] | None:
 
@@ -72,7 +73,7 @@ def validate_voc_annotation(image_width: int,
         bounding_box_width = xmax - xmin
         bounding_box_height = ymax - ymin
 
-        # calculate the 
+        # calculate the midpoint coordinates of the bounding box
         x_center = xmin + (bounding_box_width / 2)
         y_center = ymin + (bounding_box_height / 2)
 
@@ -229,14 +230,29 @@ def validate_yolo_annotation(image_file: str) -> None:
             sys.stdout.write(line)
     
     except (FileNotFoundError, OSError) as e:
-
-        sys.stderr.write(f"Error opening or processing '{yolo_annotation_filename}': {e}\n")
+        logger.error(f"Error opening or processing '{yolo_annotation_filename}': {e}\n")
 
 def process_images_and_annotations(images_dir: str, 
                                    labels_dir: str, 
                                    annotation_type: str) -> None:
 
-    image_files = [f for f in os.listdir(images_dir) if f.lower().endswith(('.png','.jpg','.jepg','.bmp', '.tif', '.tiff', '.webp'))]
+    # Get the current working directory of the script
+    current_working_directory = os.getcwd()
+
+    # Define the output directories for orphaned and unorphaned files
+    orphaned_directory = os.path.join(current_working_directory,"orphaned")
+    unorphaned_directory = os.path.join(current_working_directory,"unorphaned")
+    corrupted_directory = os.path.join(current_working_directory, "corrupted")
+
+    # Ensure the necessary subdirectories exist
+    os.makedirs(os.path.join(orphaned_directory,"images"), exist_ok=True)
+    os.makedirs(os.path.join(orphaned_directory, "labels"), exist_ok=True)
+    os.makedirs(os.path.join(unorphaned_directory, "images"), exist_ok=True)
+    os.makedirs(os.path.join(unorphaned_directory, "labels"), exist_ok=True)
+    os.makedirs(corrupted_directory, exist_ok=True)
+
+    image_files = [f for f in os.listdir(images_dir) 
+                   if f.lower().endswith(('.png','.jpg','.jpeg','.bmp', '.tif', '.tiff', '.webp'))]
 
     for filename in tqdm(image_files, desc="Processing images and their annotations"):
 
@@ -244,50 +260,152 @@ def process_images_and_annotations(images_dir: str,
         image = cv2.imread(image_path)
 
         if image is None:
-            print(f"Warning: Could not open image {filename}. Skipping")
+            logger.warning(f"Warning: Could not open image {filename}. Skipping")
+
+            try:
+                shutil.move(image_path, corrupted_directory)
+                logger.success(f"Moved corrupted image {filename} to {corrupted_directory}")
+            
+            except Exception as e:
+                logger.error(f"Error moving corrupted image {filename} : {e}")
+
             continue
 
         height, width, channels = image.shape
-        print(f"Processing '{filename}': width = {width}, height = {height}, channels = {channels}")
+        logger.info(f"Processing '{filename}': width = {width}, height = {height}, channels = {channels}")
 
-        if annotation_type.lower() == 'coco':
+        match annotation_type.lower():
 
-            coco_annotation_file = os.path.join
-            image_id = parse_coco_annotation(filename, coco_annotation_file)
-
-            if image_id is None:
-                print(f"No COCO annotation(s) found for {filename}")
-                continue
-
-            # TODO: save the bounding boxes in a text file 
-            yolo_bounding_boxes = validate_coco_annotation(width, height, image_id, coco_annotation_file)
-            
-        elif annotation_type.lower() == 'yolo':
-
-            validate_yolo_annotation(filename)
-        
-        elif annotation_type.lower() == 'pascal_voc':
-
-            base_name = os.path.splitext(filename)[0]
-            xml_file = os.path.join(labels_dir, f"{base_name}.xml")
-            bounding_boxes = parse_voc_annotation(xml_file)
-
-            if bounding_boxes is None:
-                print(f"No valid VOC annotation found for {filename}")
-                continue
+            case 'coco':
                 
-            # TODO: save the annotations in a text file
-            yolo_bounding_boxes = validate_voc_annotation(width,height,bounding_boxes)
-        
+                if not os.path.isfile(labels_dir):
+                    # Immediately stop if the COCO annotation file does not exist
+                    logger.error(f"Error: COCO annotation file '{labels_dir}' does not exist")
+                    return
 
+                image_id = parse_coco_annotation(filename, labels_dir)
+
+                # if no annotation is found the image is considered orphaned
+                if image_id is None:
+                    logger.info(f"No COCO annotation(s) found for {filename}")
+                    try:
+                        shutil.move(image_path, os.path.join(orphaned_directory, "images", filename))
+                        logger.success(f"Moved {image_path} to {os.path.join(orphaned_directory, 'images', filename)}")
+
+                    except Exception as e:
+                        logger.error(f"Error moving {filename} : {e}")
+                    
+                    # skip to the next image
+                    continue
+ 
+                yolo_bounding_boxes = validate_coco_annotation(width, height, image_id, labels_dir)
+
+                if yolo_bounding_boxes is None:
+                    logger.info(f"No valid bounding boxes for {filename}")
+                    
+                    try:
+                        shutil.move(image_path, os.path.join(orphaned_directory, "images", filename))
+                        logger.success(f"Moved {image_path} to {os.path.join(orphaned_directory, 'images', filename)}")
+                    
+                    except Exception as e:
+                        logger.error(f"Error moving {filename} : {e}")
+                    
+                    continue
+
+                try:
+                    yolo_text_file = os.path.join(unorphaned_directory, "labels", f"{filename}.txt")
+
+                    with open(yolo_text_file, "w", encoding="utf-8") as f:
+                        for bounding_box in yolo_bounding_boxes:
+                            class_id = bounding_box['class']
+                            center_x = bounding_box['center_x']
+                            center_y = bounding_box['center_y']
+                            width = bounding_box['width']
+                            height = bounding_box['height']
+                            f.write(f"{class_id} {center_x} {center_y} {width} {height}\n")
+
+                    shutil.move(image_path, os.path.join(unorphaned_directory, "images", filename))
+                    logger.success(f"Moved {image_path} to {os.path.join(unorphaned_directory, 'images',)}")
+                    logger.success(f"Created yolo annotation text file {yolo_text_file}")
+                except Exception as e:
+                    logger.error(f"Error moving {filename} : {e}")
+                
+
+            case 'yolo':
+                validate_yolo_annotation(filename)
+            
+            case 'pascal_voc':
+                base_name = os.path.splitext(filename)[0]
+                xml_file = os.path.join(labels_dir, f"{base_name}.xml")
+                bounding_boxes = parse_voc_annotation(xml_file)
+
+                if bounding_boxes is None:
+                    logger.info(f"No valid VOC annotation found for {filename}")
+
+                    try:
+                        shutil.move(image_path, os.path.join(orphaned_directory, "images", filename))
+                        logger.success(f"Moved {image_path} to {os.path.join(orphaned_directory, 'images')}")
+
+                        xml_file_path = os.path.join(labels_dir, f"{base_name}.xml")
+                        shutil.move(xml_file_path, os.path.join(orphaned_directory, "labels", f"{base_name}.xml"))
+                        logger.success(f"Moved {base_name}.xml to {os.path.join(orphaned_directory, 'labels')}")
+                    
+                    except Exception as e:
+                        logger.error(f"Error moving {filename} : {e}")
+                    
+                    continue
+                    
+                yolo_bounding_boxes = validate_voc_annotation(width,height,bounding_boxes)
+                try:
+                    yolo_text_file = os.path.join(unorphaned_directory, "labels", f"{filename}.txt")
+                    with open(yolo_text_file, "w", encoding="utf-8") as f:
+
+                        for bounding_box in yolo_bounding_boxes:
+                            class_id = bounding_box['class']
+                            center_x = bounding_box['center_x']
+                            center_y = bounding_box['center_y']
+                            width = bounding_box['width']
+                            height = bounding_box['height']
+                            f.write(f"{class_id} {center_x} {center_y} {width} {height}\n")
+
+                    shutil.move(image_path, os.path.join(unorphaned_directory, 'images', filename))
+                    logger.success(f"Moved {image_path} to {os.path.join(unorphaned_directory, 'images')}")
+                    logger.success(f"Created yolo annotation text file {yolo_text_file}")
+                
+                except Exception as e:
+                    logger.error(f"Error moving {filename} : {e}")
+            
+            case "orphaned":
+                try:
+                    shutil.move(image_path, os.path.join(orphaned_directory, "images", filename))
+                    logger.success(f"Moved {filename} to {os.path.join(orphaned_directory, 'images')}")
+                
+                except Exception as e:
+                    logger.error(f"Error moving {filename} : {e}")
+
+def eleeye_ascii_art():
+    print("      @@@@@@@@@@@@@@@  @@     @@@@@@@@@@@@@                                             ")
+    print("      @@@@@@@@@@@@@@@  @@     @@@@@@@@@@@@@                                             ")
+    print("      @@@@@@@@@@@@@@@ @@@     @@@@@@@@@@@@@                                             ")
+    print("      @@@@ @@@@@@@@@@ @@@     @@@@@@           @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@       ")
+    print("      @@@@@@@@@@@@@@@ @@@     @@@@@@@@@@@      @ _____ _      _______   _______ @       ")
+    print("      @@@@@@@@@@@@@@@ @@@@@@  @@@@@@@@@@@      @| ____| | ___| ____\ \ / / ____|@       ")
+    print("      @@@@@@@@@@@@@@@         @@@@@@@@@@@      @|  _| | |/ _ \  _|  \ V /|  _|  @       ")
+    print("      @@@@@@@@@@@@@@  @@@@@@  @@@@@@           @| |___| |  __/ |___  | | | |___ @       ")
+    print("      @@@@@@@@@@      @@@@@   @@@@@@           @|_____|_|\___|_____| |_| |_____|@       ")
+    print("      @@@@@      @@    @@@    @@@@@@           @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@       ")
+    print("      @@@@      @@@@    @@    @@@@@@@@@@@@@                                             ")
+    print("      @@@@@    @@@@@    @@    @@@@@@@@@@@@@@                                            ")
+    print("       @@@@@@@@@@@@     @@    @@@@@@@@@@@@@                                             ")
+    print("       @@@@@@@@@@                                                                       ")
 
 def main() -> None:
 
     parser = argparse.ArgumentParser()
-
     parser.add_argument("image_directory", type=str, help="Path to the images directory")
-    parser.add_argument("label_directory", type=str, help="Path to the labels directory. For COCO datasets, this is a JSON file")
-    parser.add_argument("annotation_type", type=str, choices=["coco","yolo","pascal_voc","orphaned"], 
+    parser.add_argument("label_directory", type=str, help="Path to the labels directory. For COCO datasets, this is a path to a JSON file")
+    parser.add_argument("annotation_type", type=str, 
+                        choices=["coco","yolo","pascal_voc","orphaned"], 
                          help="Type of annotations to parse: supported annotations are coco, yolo and pascal_voc. orphaned if no annotations are available")
 
     args = parser.parse_args()
@@ -310,13 +428,13 @@ def main() -> None:
         print(f"No annotation type passed")
         return
 
-    elif annotation_type not in ('coco','yolo','pascal_voc'):
+    elif annotation_type not in ('coco','yolo','pascal_voc','orphaned'):
         print(f"Unsupported annotation type")
     
     else:
+        eleeye_ascii_art()
         process_images_and_annotations(image_directory,label_directory,annotation_type)
 
-    
 
 if __name__ == "__main__":
     main()    
