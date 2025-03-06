@@ -44,7 +44,10 @@ dependencies:
   google_places_flutter: ^2.1.0
   flutter_local_notifications: ^18.0.1
   web_socket_channel: ^3.0.2
+<<<<<<< HEAD
   socket_io_client: ^3.0.2
+=======
+>>>>>>> 660a6784a4d91350784d6b6e57a3122cb4ebd452
 
 dev_dependencies:
   flutter_test:
