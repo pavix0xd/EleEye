@@ -1,6 +1,7 @@
 import 'package:eleeye/screens/auth_screen.dart';
 import 'package:eleeye/screens/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -10,28 +11,21 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final AuthScreen authService = AuthScreen(); 
+  final AuthScreen authService = AuthScreen();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isButtonPressed = false;
+  String? _passwordErrorText;
 
   void signUp() async {
+    if (!_formKey.currentState!.validate()) return;
+
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-    final confirmPassword = _confirmPasswordController.text.trim();
-
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
 
     try {
       await authService.signUpWithEmailPassword(email, password);
@@ -52,10 +46,7 @@ class _SignupScreenState extends State<SignupScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
       }
     }
@@ -79,56 +70,48 @@ class _SignupScreenState extends State<SignupScreen> {
           colors: [Color(0xFF004D40), Color(0xFFD1EEDD)],
         ),
       ),
-      constraints: const BoxConstraints.expand(),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 80),
-              const Text(
-                "Hello there!",
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              const Text(
-                "Register below with your details.",
-                style: TextStyle(fontSize: 16, color: Colors.white70),
-              ),
-              const SizedBox(height: 40),
-              _buildTextField("Email", _emailController),
-              const SizedBox(height: 20),
-              _buildTextField("Password", _passwordController, isPassword: true),
-              const SizedBox(height: 20),
-              _buildTextField("Confirm Password", _confirmPasswordController, isPassword: true),
-              const SizedBox(height: 30),
-              _buildSignupButton(),
-              const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Already have an account?  ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                  GestureDetector(
-                    onTap: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    ),
-                    child: const Text(
-                      "Log In",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 80),
+                const Text(
+                  "Hello there!",
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                const Text(
+                  "Register below with your details.",
+                  style: TextStyle(fontSize: 16, color: Colors.white70),
+                ),
+                const SizedBox(height: 40),
+                _buildTextField("Email", _emailController, isEmail: true),
+                const SizedBox(height: 20),
+                _buildTextField("Password", _passwordController, isPassword: true),
+                const SizedBox(height: 20),
+                _buildTextField("Confirm Password", _confirmPasswordController, isPassword: true),
+                if (_passwordErrorText != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5, left: 8),
+                    child: Text(_passwordErrorText!, style: const TextStyle(color: Colors.red)),
                   ),
-                ],
-              ),
-            ],
+                const SizedBox(height: 30),
+                _buildSignupButton(),
+                const SizedBox(height: 30),
+                _buildLoginPrompt(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false}) {
+  Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false, bool isEmail = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -138,14 +121,31 @@ class _SignupScreenState extends State<SignupScreen> {
           child: Builder(
             builder: (context) {
               final isFocused = Focus.of(context).hasFocus;
-              return TextField(
+              return TextFormField(
                 controller: controller,
-                obscureText: isPassword && !_isPasswordVisible,
+                obscureText: isPassword && (label == "Password" ? !_isPasswordVisible : !_isConfirmPasswordVisible),
+                keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+                textInputAction: TextInputAction.next,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'This field cannot be empty';
+                  }
+                  if (isEmail && !RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+                    return 'Enter a valid email';
+                  }
+                  if (isPassword && value.length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  if (label == "Confirm Password" && value != _passwordController.text) {
+                    return 'Passwords do not match';
+                  }
+                  return null;
+                },
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: isFocused ? Colors.white : Colors.white.withOpacity(0.1),
                   hintText: label,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 15),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -157,10 +157,17 @@ class _SignupScreenState extends State<SignupScreen> {
                   suffixIcon: isPassword
                       ? IconButton(
                           icon: Icon(
-                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            label == "Password" ? (_isPasswordVisible ? Icons.visibility : Icons.visibility_off) 
+                                               : (_isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off),
                             color: Colors.grey.shade700,
                           ),
-                          onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                          onPressed: () => setState(() {
+                            if (label == "Password") {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            } else {
+                              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                            }
+                          }),
                         )
                       : null,
                 ),
@@ -178,6 +185,7 @@ class _SignupScreenState extends State<SignupScreen> {
         onTapDown: (_) => setState(() => _isButtonPressed = true),
         onTapUp: (_) {
           setState(() => _isButtonPressed = false);
+          HapticFeedback.lightImpact(); // Haptic feedback
           signUp();
         },
         onTapCancel: () => setState(() => _isButtonPressed = false),
@@ -206,6 +214,19 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLoginPrompt() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text("Already have an account?  ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        GestureDetector(
+          onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen())),
+          child: const Text("Log In", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
+      ],
     );
   }
 }

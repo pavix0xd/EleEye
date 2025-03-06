@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/services.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   @override
@@ -10,22 +11,21 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
-  String _errorMessage = "";
+  String? _errorMessage;
   bool _isLoading = false;
-
-  // Your app's Supabase URL
   final String appUrl = "https://yourapp.supabase.co";
 
   Future<void> _verifyUser() async {
+    HapticFeedback.lightImpact();
     setState(() {
       _isLoading = true;
-      _errorMessage = "";
+      _errorMessage = null;
     });
 
     final String email = _emailController.text.trim();
-    if (email.isEmpty) {
+    if (email.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
       setState(() {
-        _errorMessage = "Please enter your email.";
+        _errorMessage = "Please enter a valid email address.";
         _isLoading = false;
       });
       return;
@@ -33,19 +33,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     final supabase = Supabase.instance.client;
     try {
-      // Send the password reset request to Supabase
       await supabase.auth.resetPasswordForEmail(email);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Password reset email sent! Check your inbox.")),
       );
 
-      // Optional: Attempt to send additional email via Brevo
-      final bool emailSent = await sendResetEmailToUser(email, "$appUrl/auth/v1/reset-password");
+      // Attempt to send additional email via Brevo (Optional)
+      final bool emailSent = await _sendResetEmailToUser(email, "$appUrl/auth/v1/reset-password");
 
       if (!emailSent) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Supabase reset email sent, but custom email failed.")),
+          const SnackBar(content: Text("Supabase email sent, but custom email failed.")),
         );
       }
     } on AuthException catch (e) {
@@ -59,35 +58,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
-  // Function to send the email via Brevo (Sendinblue)
-  Future<bool> sendResetEmailToUser(String email, String resetUrl) async {
+  Future<bool> _sendResetEmailToUser(String email, String resetUrl) async {
     try {
       final response = await http.post(
         Uri.parse('https://api.brevo.com/v3/smtp/email'),
         headers: {
           'Content-Type': 'application/json',
-          'api-key': 'YOUR_BREVO_API_KEY', // Replace with actual API key
+          'api-key': 'YOUR_BREVO_API_KEY',
         },
         body: jsonEncode({
-          'sender': {'email': 'your_email@example.com'}, // Replace with sender email
+          'sender': {'email': 'your_email@example.com'},
           'to': [{'email': email}],
-          'subject': 'Reset Password',
-          'htmlContent': '''
-            <p>Click the link below to reset your password:</p>
-            <p><a href="$resetUrl" target="_blank">Reset Password</a></p>
-          ''',
+          'subject': 'Reset Your Password',
+          'htmlContent': '<p>Click below to reset your password:</p>'
+              '<p><a href="$resetUrl" target="_blank">Reset Password</a></p>',
         }),
       );
 
-      if (response.statusCode == 200) {
-        print("Custom email sent successfully!");
-        return true;
-      } else {
-        print("Failed to send custom email: ${response.body}");
-        return false;
-      }
-    } catch (error) {
-      print("Failed to send custom email: $error");
+      return response.statusCode == 200;
+    } catch (_) {
       return false;
     }
   }
@@ -102,7 +91,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           colors: [Color(0xFF004D40), Color(0xFFD1EEDD)],
         ),
       ),
-      constraints: const BoxConstraints.expand(),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -121,37 +109,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 style: TextStyle(fontSize: 16, color: Colors.white),
               ),
               const SizedBox(height: 20),
-
-              // Email Input Field
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: _inputDecoration("Email"),
-                style: const TextStyle(color: Colors.black87),
-              ),
-              const SizedBox(height: 10),
-
-              // Error Message
-              if (_errorMessage.isNotEmpty)
-                Text(_errorMessage, style: const TextStyle(color: Colors.red)),
-
+              _buildTextField("Email", _emailController, isEmail: true),
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+                ),
               const SizedBox(height: 20),
-
-              // Reset Button
               _isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal.shade900,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      ),
-                      onPressed: _verifyUser,
-                      child: const Text(
-                        "Reset Password",
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                    ),
+                  : _buildResetButton(),
             ],
           ),
         ),
@@ -159,16 +126,32 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String hintText) {
-    return InputDecoration(
-      filled: true,
-      fillColor: Colors.grey.shade300,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
-        borderSide: BorderSide.none,
+  Widget _buildTextField(String label, TextEditingController controller, {bool isEmail = false}) {
+    return TextField(
+      controller: controller,
+      keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.grey.shade300,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
+        ),
+        hintText: label,
+        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       ),
-      hintText: hintText,
-      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+    );
+  }
+
+  Widget _buildResetButton() {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.teal.shade900,
+        minimumSize: const Size(double.infinity, 50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      ),
+      onPressed: _verifyUser,
+      child: const Text("Reset Password", style: TextStyle(color: Colors.white, fontSize: 16)),
     );
   }
 }

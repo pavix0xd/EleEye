@@ -1,5 +1,6 @@
 import 'package:eleeye/api/firebase_api.dart';
 import 'package:eleeye/screens/login_screen.dart';
+import 'package:eleeye/screens/message_screen.dart';
 import 'package:eleeye/screens/splash_screen.dart';
 import 'package:eleeye/screens/settings_screen.dart';
 import 'package:eleeye/screens/bottom_nav_bar.dart';
@@ -22,10 +23,6 @@ Future<void> main() async {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     debugPrint("Firebase initialized successfully.");
 
-    // Initialize Firebase notifications
-    await FirebaseApi().initNotifications();
-    debugPrint("Firebase Cloud Messaging (FCM) initialized.");
-
     // Load environment variables
     await dotenv.load();
     final String? supabaseUrl = dotenv.env['SUPABASE_URL'];
@@ -38,6 +35,10 @@ Future<void> main() async {
     // Initialize Supabase
     await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
     debugPrint("Supabase initialized successfully.");
+
+    // Initialize Firebase notifications
+    await FirebaseApi().initNotifications();
+    debugPrint("Firebase Cloud Messaging (FCM) initialized.");
   } catch (e) {
     debugPrint("Error during initialization: $e");
     return;
@@ -73,6 +74,7 @@ class EleEYEApp extends StatelessWidget {
         '/settings': (context) => SettingsScreen(),
         '/bottomNavBar': (context) => BottomNavBar(),
         '/login': (context) => const LoginScreen(),
+        '/message_screen': (context) => const MessageScreen(),
       },
     );
   }

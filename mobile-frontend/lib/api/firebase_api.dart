@@ -1,29 +1,57 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:eleeye/main.dart';
 
 class FirebaseApi {
-  final _firebaseMessaging = FirebaseMessaging.instance;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  final SupabaseClient _supabase = Supabase.instance.client;
 
-  // Function to initialize notifications
   Future<void> initNotifications() async {
     await _firebaseMessaging.requestPermission();
-    final FCMToken = await _firebaseMessaging.getToken();
-    print("FCM Token: $FCMToken");
+    
+    final fcmToken = await _firebaseMessaging.getToken();
+    print("FCM Token: $fcmToken");
+
+    if (fcmToken != null) {
+      await saveTokenToSupabase(fcmToken);
+    }
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Foreground message received: ${message.notification?.title}");
+    });
+
     initPushNotifications();
   }
 
-  // Function to handle received notifications
+  Future<void> saveTokenToSupabase(String token) async {
+  final user = _supabase.auth.currentUser;
+  if (user == null) return;
+
+  try {
+    await _supabase.from('userInfo').upsert({
+      'id': user.id,  
+      'fcm_token': token,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+
+    print("FCM token registered to Supabase!");
+  } catch (e) {
+    print("Error saving FCM token: $e");
+  }
+}
+
+
   void handleMessage(RemoteMessage? message) {
     if (message == null) return;
-
-    // Navigate to the notification screen when the user taps the notification
-    navigatorKey.currentState?.pushNamed('/message_screen', arguments: message);
+    navigatorKey.currentState?.pushNamed(
+      '/message_screen',
+      arguments: message,
+    );
   }
 
-  // Initialize and handle background settings
   Future<void> initPushNotifications() async {
     FirebaseMessaging.instance.getInitialMessage().then(handleMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
+    FirebaseMessaging.instance.onTokenRefresh.listen(saveTokenToSupabase);
   }
 }
