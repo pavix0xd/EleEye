@@ -1,3 +1,10 @@
 *.py
 *.mp4
 *.png
+
+# Ignore orphaned, unorphaned and corrupted directories, 
+# which are for the data (image) gathering process
+
+orphaned/
+unorphaned/
+corrupted/
