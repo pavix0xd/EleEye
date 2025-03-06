@@ -23,10 +23,6 @@ Future<void> main() async {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     debugPrint("Firebase initialized successfully.");
 
-    // Initialize Firebase notifications
-    await FirebaseApi().initNotifications();
-    debugPrint("Firebase Cloud Messaging (FCM) initialized.");
-
     // Load environment variables
     await dotenv.load();
     final String? supabaseUrl = dotenv.env['SUPABASE_URL'];
@@ -39,6 +35,10 @@ Future<void> main() async {
     // Initialize Supabase
     await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
     debugPrint("Supabase initialized successfully.");
+
+    // Initialize Firebase notifications
+    await FirebaseApi().initNotifications();
+    debugPrint("Firebase Cloud Messaging (FCM) initialized.");
   } catch (e) {
     debugPrint("Error during initialization: $e");
     return;
