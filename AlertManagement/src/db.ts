@@ -6,7 +6,7 @@ dotenv.config();
 
 // Check if required environment variables are present
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
-  throw new Error("Supabase URL or ANON_KEY is missing from the environment variables.");
+  throw new Error("Supabase URL or SUPABASE_KEY is missing from the environment variables.");
 }
 
 // Initialize Supabase client using environment variables
