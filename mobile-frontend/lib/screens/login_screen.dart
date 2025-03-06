@@ -1,9 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:eleeye/api/firebase_api.dart';
 import 'package:eleeye/screens/auth_screen.dart';
 import 'package:eleeye/screens/forgot_pass_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:eleeye/screens/signup_screen.dart';
 import 'package:eleeye/screens/bottom_nav_bar.dart';
-import 'package:flutter/services.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,7 +13,7 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> {
   final authService = AuthScreen();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -20,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   bool _isButtonPressed = false;
   bool _isLoading = false;
 
-  void login() async {
+  Future<void> login() async {
     if (_isLoading) return;
 
     final email = _emailController.text.trim();
@@ -36,6 +37,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
     try {
       await authService.signInWithEmailPassword(email, password);
+      await FirebaseApi().initNotifications(); // Register FCM token after login
+
       if (mounted) {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const BottomNavBar()));
       }
@@ -114,41 +117,27 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildTextField(String label, TextEditingController controller, TextInputType keyboardType, {bool isPassword = false}) {
-    return TweenAnimationBuilder(
-      duration: const Duration(milliseconds: 500),
-      tween: Tween<double>(begin: 0, end: 1),
-      builder: (context, double value, child) {
-        return Opacity(opacity: value, child: child);
-      },
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        obscureText: isPassword && !_isPasswordVisible,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.white.withOpacity(0.2),
-          hintText: label,
-          hintStyle: const TextStyle(color: Colors.white70),
-          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: Colors.teal, width: 2),
-          ),
-          suffixIcon: isPassword
-              ? IconButton(
-                  icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white70),
-                  onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                )
-              : null,
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: isPassword && !_isPasswordVisible,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.2),
+        hintText: label,
+        hintStyle: const TextStyle(color: Colors.white70),
+        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
         ),
-        style: const TextStyle(color: Colors.white),
-        cursorColor: Colors.white,
-        autofillHints: isPassword ? [AutofillHints.password] : [AutofillHints.email],
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(color: Colors.teal, width: 2),
+        ),
       ),
+      style: const TextStyle(color: Colors.white),
+      cursorColor: Colors.white,
     );
   }
 
@@ -177,7 +166,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         decoration: BoxDecoration(
           gradient: LinearGradient(colors: _isButtonPressed ? [Colors.teal.shade700, Colors.teal.shade800] : [Colors.teal.shade900, Colors.teal.shade700]),
           borderRadius: BorderRadius.circular(30),
-          boxShadow: _isButtonPressed ? [BoxShadow(color: Colors.teal.shade700.withOpacity(0.5), blurRadius: 10, spreadRadius: 1)] : [],
         ),
         child: Center(
           child: _isLoading
@@ -192,10 +180,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Don't have an account?  ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        const Text("Don't have an account? "),
         GestureDetector(
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupScreen())),
-          child: const Text("Sign Up", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          child: const Text("Sign Up", style: TextStyle(fontWeight: FontWeight.bold)),
         ),
       ],
     );
