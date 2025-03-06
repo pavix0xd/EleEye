@@ -287,8 +287,8 @@ def main() -> None:
 
     parser.add_argument("image_directory", type=str, help="Path to the images directory")
     parser.add_argument("label_directory", type=str, help="Path to the labels directory. For COCO datasets, this is a JSON file")
-    parser.add_argument("annotation_type", type=str, choices=["coco","yolo","pascal_voc"], 
-                         help="Type of annotations to parse: supported annotations are coco, yolo and pascal_voc")
+    parser.add_argument("annotation_type", type=str, choices=["coco","yolo","pascal_voc","orphaned"], 
+                         help="Type of annotations to parse: supported annotations are coco, yolo and pascal_voc. orphaned if no annotations are available")
 
     args = parser.parse_args()
 
