@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { createServer } from 'http';
+import { createServer, Server as HttpServer } from 'http';
 import { Server } from 'socket.io';
 import elephantRoutes from './routes/elephantRoutes';
 import supabase from './utils/supabaseClient';
@@ -16,7 +16,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Create an HTTP server
-const server = createServer(app);
+const server: HttpServer = createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' }
 });
