@@ -33,15 +33,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     final supabase = Supabase.instance.client;
     try {
-      await supabase.auth.resetPasswordForEmail(email);
+      await supabase.auth.resetPasswordForEmail(
+        email,
+        redirectTo: "yourapp://reset-password", // Deep link handling
+      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Password reset email sent! Check your inbox.")),
       );
 
-      // Attempt to send additional email via Brevo (Optional)
+      // Optional: Send custom email via Brevo
       final bool emailSent = await _sendResetEmailToUser(email, "$appUrl/auth/v1/reset-password");
-
       if (!emailSent) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Supabase email sent, but custom email failed.")),
