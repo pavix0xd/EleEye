@@ -42,7 +42,7 @@ class _MapPageState extends State<MessageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GoogleMap(
-        initialCameraPosition: CameraPosition(target: _cameraPosition, zoom: 15.0),
+        initialCameraPosition: CameraPosition(target: _cameraPosition, zoom: 16.0),
         markers: {
           if (_currentLocation != null)
             Marker(
