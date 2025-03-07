@@ -1,4 +1,4 @@
-import gi, sys, requests, pyds
+import gi, sys, requests, re, pyds
 gi.require_version('Gst','1.0')
 from gi.repository import Gst, GObject
 from loguru import logger
@@ -7,7 +7,7 @@ from loguru import logger
 Gst.init(None)
 
 # EleEYE ascii art that is displayed across the project
-def ascii_art():
+def eleye_ascii_art():
     print("      @@@@@@@@@@@@@@@  @@     @@@@@@@@@@@@@                                             ")
     print("      @@@@@@@@@@@@@@@  @@     @@@@@@@@@@@@@                                             ")
     print("      @@@@@@@@@@@@@@@ @@@     @@@@@@@@@@@@@                                             ")
@@ -171,6 +171,7 @@ def metadata_probe_callback(pad, info):
 
         frame_meta = pyds.NvDsFrameMeta.cast(l_frame.data)
         frame_num = frame_meta.frame_num
+        user_meta_list = frame_meta.frame_user_meta_list
         detections = []
 
         l_obj = frame_meta.obj_meta_list
@@ -217,7 +218,6 @@ def metadata_probe_callback(pad, info):
         
     return Gst.PadProbeReturn.OK
 
-
 def on_pad_added(src, new_pad, depay):
 
     """
@@ -236,6 +236,66 @@ def on_pad_added(src, new_pad, depay):
 
     else:
         logger.warning(f"[{src.get_name()}] Failed to link pad: {ret}")
+
+stream_metadata = {}
+def on_sdp_callback(rtspsrc, sdp):
+
+    sdp_text = sdp.sdp.as_text()
+
+    lat_match = re.search(r"a=latitude:(\S+)", sdp_text)
+    lon_match = re.search(r"a=longitude:(\S+)", sdp_text)
+
+    if lat_match and lon_match:
+
+        latitude = lat_match.group(1)
+        longitude = lon_match.group(1)
+    
+        # setting a temporary unique key. Idealy a unique key for the 
+        # RTSP stream should be the RTSP URI or designated stream ID
+        key = rtspsrc.get_property("location")
+
+        stream_metadata[key] = {"latitude" : latitude, "longitude" : longitude}
+
+        logger.info(f"Extracted metadata for stream {key} : {stream_metadata[key]}")
+
+
+def attach_location_metadata(pad, info, user_data):
+
+    buffer = info.get_buffer()
+
+    if not buffer:
+        return Gst.PadProbeReturn.OK
+
+    batch_meta = pyds.gst_buffer_get_nvds_batch_meta(hash(buffer))
+
+    if not batch_meta:
+        return Gst.PadProbeReturn.OK
+
+
+    frame_meta_list = batch_meta.frame_meta_list
+
+    while frame_meta_list is not None:
+
+        frame_meta = pyds.NvDsFrameMeta.cast(frame_meta_list.data)
+
+        stream_id = frame_meta.pad_id
+
+        gps_data = stream_metadata.get(stream_id, None)
+
+        if gps_data:
+
+            user_meta = pyds.nvds_acquire_user_meta_from_pool(batch_meta)
+
+            if user_data:
+
+                user_meta.user_meta_data = gps_data
+                user_meta.base_meta.meta_type = pyds.NvDsMetaType.NVDS_USER_META
+
+                pyds.nvds_add_user_meta_to_frame(frame_meta, user_meta)
+            
+            frame_meta_list = frame_meta_list.next
+    
+    return Gst.PadProbeReturn.OK
 
 def rtsp_sub_pipeline(url, sub_pipeline_id):
 
@@ -294,6 +354,14 @@ def rtsp_sub_pipeline(url, sub_pipeline_id):
     h264parse.set_property("config-interval",1)
     h264parse.set_property("disable-passthrough",True)
 
+    # Setting on-sdp signal callback for latitude and longitude data
+    # extraction
+    rtspsrc.connect("on-sdp",on_sdp_callback)
+
+    # Attaching pad probe to the src pad of nvv4l2decoder, so latitude
+    # and longitude data remain on each decoded frame before batching
+    src_pad = nvv4l2decoder.get_static_pad("src")
+    src_pad.add_probe(Gst.PadProbeType.BUFFER, attach_location_metadata, None)
     
     # adding the elements to the dictionary and returning it
     sub_pipeline["rtspsrc"] = rtspsrc
@@ -305,7 +373,7 @@ def rtsp_sub_pipeline(url, sub_pipeline_id):
     
 def main():
 
-    ascii_art()
+    eleye_ascii_art()
 
     """
     Creating object-detection pipeline. logging on critical level and 
@@ -357,6 +425,9 @@ def main():
 
     fakesink.set_property("sync",False)
     fakesink.set_property("async",False)
+
+    # adding sink pad probe to fakesink, in order to retrieve inference
+    # metadata and user-defined location and latitude metadata
 
     # adding elements to the pipeline
     pipeline.add(nvstreammux)
