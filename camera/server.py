@@ -14,7 +14,10 @@ def route(method, path):
         return func
     return decorator
 
-def ServerHandler(BaseHTTPRequestHandler):
+class ServerHandler(BaseHTTPRequestHandler):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
     
     def do_GET(self):
         self.handle_request("GET")
@@ -60,7 +63,7 @@ def ServerHandler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         return json.loads(post_data.decode('utf-8'))
     
-def run(server_class=HTTPServer, handler_class=ServerHandler, port=8000):
+def run(server_class=HTTPServer, handler_class=ServerHandler, port=8080):
     server_address = ("127.0.0.1", port)
     httpd = server_class(server_address, handler_class)
     print(f"Starting request server on port {port}")
@@ -104,7 +107,7 @@ def warning_light(self):
     try:
 
         payload = self.get_payload()
-        color = tuple(payload.get('color', (255,0,0))) # what color to use for the warning light. Default of red
+        color = payload.get('color', [255,0,0]) # what color to use for the warning light. Default of red
         duration = payload.get('duration', 10) # what duration to flicker the warning light on and off
         rate = payload.get('rate', 1) # the frequency of flickers
 
@@ -133,7 +136,7 @@ def warning_light(self):
             self.send_response(400) # Bad request
             self.send_header('Content-type','application/json')
             self.end_headers()
-            self.wfile.write(json.dump(response).encode('utf-8'))
+            self.wfile.write(json.dumps(response).encode('utf-8'))
             return
         
         # if Valid data was recieved, the warning light function which interacts
@@ -167,7 +170,7 @@ def warning_light(self):
         self.send_response(500)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        self.wfile.write(json.dump(response).encode('utf-8'))
+        self.wfile.write(json.dumps(response).encode('utf-8'))
 
 if __name__ == "__main__":
     run()
