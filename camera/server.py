@@ -56,12 +56,12 @@ def ServerHandler(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def get_payload(self):
-        content_length = int(self.headers['Content-lenght'])
+        content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
         return json.loads(post_data.decode('utf-8'))
     
 def run(server_class=HTTPServer, handler_class=ServerHandler, port=8000):
-    server_address = ("", port)
+    server_address = ("127.0.0.1", port)
     httpd = server_class(server_address, handler_class)
     print(f"Starting request server on port {port}")
     httpd.serve_forever()
@@ -138,7 +138,9 @@ def warning_light(self):
         
         # if Valid data was recieved, the warning light function which interacts
         # with the Raspberry Pi Board will be called, with the passed in parameters
-        warning_lights.control_warning_lights(color, duration, rate)
+        #warning_lights.control_warning_lights(color, duration, rate)
+
+        print(f"Simulating warning lights: color={color}, duration={duration}, rate={rate}")
 
         response = {
             "status" : "success",
