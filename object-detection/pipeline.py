@@ -49,17 +49,29 @@ def bus_call(bus,message,loop):
 
         if ("rtspsrc" in source.lower()):
 
-            if ("timed out" in error.message.lower()):
-                logger.info("connection timed out, attempting to reconnect")
+            if (error.domain == Gst.ResourceError):
+
+                if (error.code == Gst.ResourceError.TIMEOUT):
+                    logger.info("[rtspsrc error]: Connection timed out")
             
-            elif ("connect" in error.message.lower()):
-                logger.error("Connection error in rtspsrc")
+                elif (error.code == Gst.ResourceError.NOT_FOUND):
+                    logger.error("[rtspsrc error]: Connection error (resource not found)")
             
-            elif ("authentication" in error.message.lower()):
-                logger.error("Authentication in rtspsrc")
+                elif (error.code ==  Gst.ResourceError.NO_PERMISSION):
+                    logger.error("[rtspsrc error]: Authentication error")
+                
+                else:
+
+                    logger.error("[rtspsrc error]: Unknown resourc error code")
             
-            elif ("sdp" in error.message.lower()):
-                logger.error("SDP error in rtspsrc")
+            else:
+
+                if ("sdp" in error.message.lower()):
+                    logger.error("[rtspsrc error]: SDP error detected")
+                
+                else:
+                    logger.error("[rtspsrc error]: Unhandled error case.")
+            
         
 
         elif ("rtph264depay" in source.lower()):
@@ -171,7 +183,6 @@ def metadata_probe_callback(pad, info):
 
         frame_meta = pyds.NvDsFrameMeta.cast(l_frame.data)
         frame_num = frame_meta.frame_num
-        user_meta_list = frame_meta.frame_user_meta_list
         detections = []
 
         l_obj = frame_meta.obj_meta_list
@@ -195,16 +206,35 @@ def metadata_probe_callback(pad, info):
 
                     }
                 }
+
+                detections.append(detection)
             
             try:
                 l_obj = l_obj.next
             except StopIteration:
                 break
         
+        l_user_meta = frame_meta.frame_user_meta_list
+        while l_user_meta:
+
+            user_meta = pyds.NvDsUserMeta.cast(l_user_meta.data)
+            if user_meta.base_meta.meta_type == pyds.NvDsMetaType.NVDS_USER_META:
+
+                gps_data = user_meta.user_meta_data
+                logger.info(f"Frame {frame_num} location metadata: {gps_data}")
+            
+            try:
+                l_user_meta = l_user_meta.next
+            
+            except StopIteration:
+                break
+
         if detections:
             
-            payload = {"frame" : frame_num, "detections" : detections}
+            payload = {"frame" : frame_num, "detections" : detections, "location":l_user_meta}
 
+
+            # --TODO: change backend URL to production server --
             try:
                 response = requests.post("backend-url", json=payload, timeout=1)
                 logger.info(f"POST sent for frame {frame_num} : Status {response.status_code}")
@@ -221,8 +251,9 @@ def metadata_probe_callback(pad, info):
 def on_pad_added(src, new_pad, depay):
 
     """
-    Gstreamer callback to handle dynamic pad from rtspsrc and link it to 
-    rtph264depay
+    Gstreamer callback to handle rtspsrc's dynamic sink pads, which
+    may be removed or produce no output if the stream has latency or
+    disconnects. 
     """
 
     sink_pad = depay.get_static_pad("sink")
@@ -236,6 +267,7 @@ def on_pad_added(src, new_pad, depay):
 
     else:
         logger.warning(f"[{src.get_name()}] Failed to link pad: {ret}")
+
 
 stream_metadata = {}
 def on_sdp_callback(rtspsrc, sdp):
@@ -259,7 +291,7 @@ def on_sdp_callback(rtspsrc, sdp):
         logger.info(f"Extracted metadata for stream {key} : {stream_metadata[key]}")
 
 
-def attach_location_metadata(pad, info, user_data):
+def attach_location_metadata(pad, info, key):
 
     buffer = info.get_buffer()
 
@@ -274,28 +306,27 @@ def attach_location_metadata(pad, info, user_data):
 
     frame_meta_list = batch_meta.frame_meta_list
 
-    while frame_meta_list is not None:
+    while frame_meta_list:
 
         frame_meta = pyds.NvDsFrameMeta.cast(frame_meta_list.data)
-
         stream_id = frame_meta.pad_id
-
         gps_data = stream_metadata.get(stream_id, None)
 
         if gps_data:
-
             user_meta = pyds.nvds_acquire_user_meta_from_pool(batch_meta)
+            user_meta.user_meta_data = gps_data
+            user_meta.base_meta.meta_type = pyds.NvDsMetaType.NVDS_USER_META
+            pyds.nvds_add_user_meta_to_frame(frame_meta, user_meta)
 
-            if user_data:
-
-                user_meta.user_meta_data = gps_data
-                user_meta.base_meta.meta_type = pyds.NvDsMetaType.NVDS_USER_META
-
-                pyds.nvds_add_user_meta_to_frame(frame_meta, user_meta)
-            
+        
+        try:
             frame_meta_list = frame_meta_list.next
+        
+        except StopIteration:
+            break
     
     return Gst.PadProbeReturn.OK
+
 
 def rtsp_sub_pipeline(url, sub_pipeline_id):
 
@@ -344,24 +375,30 @@ def rtsp_sub_pipeline(url, sub_pipeline_id):
         logger.info("nvv4l2decoder element was created")
     
     # if all elements are created successfully, their properties are added
-    rtspsrc.set_property("location","") # rtsp url, set to bogus value for now
+    rtspsrc.set_property("location",url) # rtsp url, set to bogus value for now
     rtspsrc.set_property("user-id","")
     rtspsrc.set_property("user-pw","")
     rtspsrc.set_property("is-live",True)
     rtspsrc.set_property("connection-speed",0) #default of 0, indicating an unknown network speed
     rtspsrc.set_property("drop-on-latency",False)
+    rtspsrc.connect("pad-added", on_pad_added, None)
+    rtspsrc.connect("on-sdp", on_sdp_callback)
 
     h264parse.set_property("config-interval",1)
     h264parse.set_property("disable-passthrough",True)
-
-    # Setting on-sdp signal callback for latitude and longitude data
-    # extraction
-    rtspsrc.connect("on-sdp",on_sdp_callback)
 
     # Attaching pad probe to the src pad of nvv4l2decoder, so latitude
     # and longitude data remain on each decoded frame before batching
     src_pad = nvv4l2decoder.get_static_pad("src")
     src_pad.add_probe(Gst.PadProbeType.BUFFER, attach_location_metadata, None)
+
+    # Link the static elements (rtph264depay -> h264parse -> nvv4l2decoder)
+
+    if not rtph264depay.link(h264parse):
+        logger.error("Failed to link rtph264depay and h264parse")
+    
+    if not h264parse.link(nvv4l2decoder):
+        logger.error("Failed to link h264parse and nvv4ldecoder")
     
     # adding the elements to the dictionary and returning it
     sub_pipeline["rtspsrc"] = rtspsrc
@@ -370,7 +407,50 @@ def rtsp_sub_pipeline(url, sub_pipeline_id):
     sub_pipeline["nvv4l2decoder"] = nvv4l2decoder
 
     return sub_pipeline
+
+def add_rtsp_stream(pipeline, nvstreammux, rtsp_url, index):
+
+    """
+    Creates Gst.Bin for the RTSP sub-pipeline and links it to
+    nvstreammux's dynamic source pads
+    """   
+
+    rtsp_bin = Gst.Bin.new(f"rtsp_bin_{index}")
+
+    sub_pipeline = rtsp_sub_pipeline(rtsp_url, index)
+
+    if not sub_pipeline:
+        logger.error(f"Failed to create sub-pipeline for {rtsp_url}")
+        return False
+
+    for element in sub_pipeline.values():
+        rtsp_bin.add(element)
     
+    # Create a ghost pad on the bin that exposes the output from nvv4l2decoder
+    decoder_src_pad = sub_pipeline["nvv4l2decoder"].get_static_pad("src")
+    ghost_pad = Gst.GhostPad.new("src", decoder_src_pad)
+    rtsp_bin.add_pad(ghost_pad)
+
+    # Add the bin to the main pipeline
+    pipeline.add(rtsp_bin)
+    rtsp_bin.sync_state_with_parent()
+
+    # Request a sink pad on nvstreammux for this new stream
+    sink_pad = nvstreammux.get_request_pad(f"sink_{index}")
+
+    if not sink_pad:
+        logger.error(f"Failed to obtain sink pad for stream {index}")
+        return False
+
+    ret = ghost_pad.link(sink_pad)
+
+    if ret != Gst.PadLinkReturn.OK:
+        logger.error(f"Failed to link stream {index} to nvstreammux")
+        return False
+
+    logger.info(f"RTSP stream {rtsp_url} added at index {index}")
+    return True
+ 
 def main():
 
     eleye_ascii_art()
@@ -452,14 +532,21 @@ def main():
     
     sink_pad.add_probe(Gst.PadProbeType.BUFFER, metadata_probe_callback)
     
-    # Create all rtsp sub pipelines and ultimately connect them to 
-    # nvsteammux
+    # Adding RTSP streams to the main pipeline
 
+    # -- TODO: dont add them as lists, maybe use a configuration file of some sort
+    rtsp_urls = [""]
 
+    for i, url in enumerate(rtsp_urls):
+        add_rtsp_stream(pipeline=pipeline, nvstreammux=nvstreammux, rtsp_url=url, index=i)
+    
+
+    # Set up bus and main loop.
     bus = pipeline.get_bus()
     bus.add_signal_watch()
     loop = GObject.MainLoop()
 
+    # add bus_call handler for messages from the bus
     bus.connect("message", bus_call, loop)
 
     # Finally, start the pipeline
