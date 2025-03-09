@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 import json
+import warning_lights
 
 # global route mapping
 routes = {}
@@ -99,8 +100,7 @@ def validate_rate(rate):
 
     return True, None
 
-
-                     
+               
 # routes and methods defined here
 @route('POST', '/warning_light')
 def warning_light(self):
@@ -135,6 +135,7 @@ def warning_light(self):
         
         # if Valid data was recieved, the warning light function which interacts
         # with the Raspberry Pi Board will be called, with the passed in parameters
+        warning_lights.control_warning_lights(color, duration, rate)
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
