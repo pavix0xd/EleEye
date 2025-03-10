@@ -70,3 +70,44 @@ class _LocationScreenState extends State<LocationScreen> {
     _destinationController.dispose();
     super.dispose();
   }
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    // When map is created, immediately update to current location if available
+    if (_currentLocation != null) {
+      _animateCameraToPosition(_currentLocation!);
+    }
+  }
+
+  Future<void> _checkLocationPermissions() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        _showAlert("Permission Denied", "Location access is required for tracking.");
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      _showAlert("Permission Denied", "Enable location access in device settings.");
+      return;
+    }
+    _determineCurrentLocation();
+  }
+
+  Future<void> _determineCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        _currentLocation = LatLng(position.latitude, position.longitude);
+        _updateCurrentLocationMarker();
+      });
+      _fetchNearbyElephants();
+
+      // Animate camera to current location when first determined
+      if (_currentLocation != null && mapController != null) {
+        _animateCameraToPosition(_currentLocation!);
+      }
+    } catch (e) {
+      _showAlert("Error", "Failed to get location: ${e.toString()}");
+    }
+  }
