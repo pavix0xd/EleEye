@@ -111,3 +111,50 @@ class _LocationScreenState extends State<LocationScreen> {
       _showAlert("Error", "Failed to get location: ${e.toString()}");
     }
   }
+   // Start continuous location tracking
+  void _startLocationTracking() {
+    // Cancel any existing stream first
+    _positionStream?.cancel();
+
+    // Start a new position stream with high accuracy
+    _positionStream = Geolocator.getPositionStream(
+      locationSettings: LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5, // Update every 5 meters
+      ),
+    ).listen((Position position) {
+      setState(() {
+        _currentLocation = LatLng(position.latitude, position.longitude);
+        _updateCurrentLocationMarker();
+
+        // Update route if journey is started
+        if (_isJourneyStarted && _destination != null) {
+          _getRoutePoints();
+        }
+      });
+
+      _fetchNearbyElephants();
+      if (_isJourneyStarted) {
+        _checkForElephantsNearby();
+      }
+    });
+  }
+
+  void _updateCurrentLocationMarker() {
+    if (_currentLocation == null) return;
+
+    setState(() {
+      // Remove old marker
+      _markers.removeWhere((marker) => marker.markerId.value == "currentLocation");
+
+      // Add updated marker
+      _markers.add(
+        Marker(
+          markerId: MarkerId("currentLocation"),
+          position: _currentLocation!,
+          infoWindow: InfoWindow(title: "You Are Here"),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        ),
+      );
+    });
+  }
