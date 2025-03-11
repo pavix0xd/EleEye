@@ -33,7 +33,7 @@ def control_warning_lights(color, duration_seconds, rate_seconds):
 
     start_time = time.time()
     
-    while time.time() - start_time() < duration_seconds:
+    while time.time() - start_time < duration_seconds:
 
         LED_STRIP.fill(color)
         time.sleep(rate_seconds)
