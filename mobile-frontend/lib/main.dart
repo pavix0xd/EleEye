@@ -1,7 +1,7 @@
 import 'package:eleeye/api/firebase_api.dart';
-import 'package:eleeye/screens/forgot_pass_screen.dart';
 import 'package:eleeye/screens/login_screen.dart';
 import 'package:eleeye/screens/message_screen.dart';
+import 'package:eleeye/screens/reset_pass.dart';
 import 'package:eleeye/screens/splash_screen.dart';
 import 'package:eleeye/screens/settings_screen.dart';
 import 'package:eleeye/screens/bottom_nav_bar.dart';
@@ -61,6 +61,8 @@ class EleEYEApp extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final session = Supabase.instance.client.auth.currentSession;
 
+    final String? resetToken = ''; // Define resetToken
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'EleEYE App',
@@ -75,7 +77,7 @@ class EleEYEApp extends StatelessWidget {
         '/bottomNavBar': (context) => BottomNavBar(),
         '/login': (context) => const LoginScreen(),
         '/message_screen': (context) => const MessageScreen(),
-        '/reset-password': (context) => ForgotPasswordScreen(), // Deep link support
+        '/reset-password': (context) => ResetPasswordScreen(token: resetToken ?? ''),
       },
     );
   }
