@@ -208,7 +208,7 @@ socket.onDisconnect((_) {
         children: [
           GoogleMap(
             onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(target: LatLng(7.8731, 80.7718), zoom: 7.8),
+            initialCameraPosition: CameraPosition(target: LatLng(7.8731, 80.7718), zoom: 8.8),
             markers: _markers,
             polylines: _routes,
           ),
