@@ -158,3 +158,99 @@ class _LocationScreenState extends State<LocationScreen> {
       );
     });
   }
+  void _setupSocketConnection() {
+    socket = io.io('http://10.0.2.2:5003', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': true,
+    });
+
+    socket.onConnect((_) => print('Connected to WebSocket'));
+    socket.on('elephant_locations', (data) => _updateElephantMarkers(data));
+    socket.onDisconnect((_) => print('Disconnected from WebSocket'));
+  }
+
+  Future<void> _fetchNearbyElephants() async {
+    if (_currentLocation == null) return;
+
+    try {
+      final response = await http.get(Uri.parse(
+          'http://10.0.2.2:5003/elephants/nearby?latitude=${_currentLocation!.latitude}&longitude=${_currentLocation!.longitude}'));
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        _updateElephantMarkers(data);
+      } else {
+        print("Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Network error: $e");
+    }
+  }
+
+  void _updateElephantMarkers(dynamic data) {
+    setState(() {
+      // Only remove elephant markers, not the current location or destination markers
+      _markers.removeWhere((marker) => marker.markerId.value.startsWith("elephant"));
+
+      for (var elephant in data) {
+        _markers.add(
+          Marker(
+            markerId: MarkerId("elephant_${elephant['id']}"),
+            position: LatLng(elephant['latitude'], elephant['longitude']),
+            infoWindow: InfoWindow(title: "Elephant ${elephant['id']}"),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          ),
+        );
+      }
+    });
+  }
+
+  // Improved method to search for destination
+  Future<void> _searchDestination() async {
+    final query = _destinationController.text.trim().toLowerCase();
+    if (query.isEmpty) {
+      _showAlert("Error", "Please enter a destination");
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      // First check if the location is in our predefined list
+      bool locationFound = false;
+
+      // Try exact match first
+      if (_sriLankaLocations.containsKey(query)) {
+        _setDestination(query, _sriLankaLocations[query]!);
+        locationFound = true;
+      } else {
+        // Try partial match if exact match fails
+        for (var entry in _sriLankaLocations.entries) {
+          if (entry.key.contains(query) || query.contains(entry.key)) {
+            _setDestination(entry.key, entry.value);
+            locationFound = true;
+            break;
+          }
+        }
+      }
+
+      // If no match found, try the server-based search or show error
+      if (!locationFound) {
+        // Try to call a server-based location API (implement as per your backend)
+        bool serverSearchSuccessful = await _searchViaServer(query);
+
+        if (!serverSearchSuccessful) {
+          _showAlert("Location Not Found",
+              "The location '$query' was not found. Please try a more common city name in Sri Lanka.");
+        }
+      }
+    } catch (e) {
+      _showAlert("Error", "Failed to find location: ${e.toString()}");
+    } finally {
+      setState(() {
+        _isSearching = false;
+      });
+    }
+  }
