@@ -545,5 +545,4 @@ def mainloop():
         time.sleep(2)
         logger.info("[Mainloop] Restarting camera pipeline")
 
-
 mainloop()
