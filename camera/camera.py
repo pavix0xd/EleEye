@@ -1,5 +1,7 @@
 import time, errno, sys, subprocess, signal, os, gc, psutil, socket, logging
-from picamera2 import Picamera2, FfmpegOutput
+from picamera2 import Picamera2
+from picamera2.outputs import FfmpegOutput
+from picamera2.encoders import H264Encoder
 
 # Configure top-level logger using Python's built-in logger.
 logging.basicConfig(
@@ -9,18 +11,21 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
-# --- Ffmpeg error handler callback
+# --- FFmpeg error handler callback ---
 
 def ffmpeg_error_handler(error):
+
     logger.error(f"[FFmpeg Error handler], Error : {error}")
+    
     if isinstance(error, BrokenPipeError):
         logger.info("[FFmpeg Error handler] Detected BrokenPipeError - FFmpeg likely crashed")
         # TODO: restart FFmpeg pipeline
+
     elif isinstance(error, OSError):
         if error.errno == errno.EPIPE:
             logger.info("[FFmpeg Error Handler] EPIPE (broken pipe)")
             # TODO: restart FFmpeg
+
         else:
             logger.info(f"[FFmpeg Error Handler] OSError with errno={error.errno}")
             # TODO: restart FFmpeg
@@ -31,15 +36,21 @@ def ffmpeg_error_handler(error):
 
 # --- Recovery functions ---
 
-def check_connection(host="0.0.0.0", port=53, timeout=3) -> bool:
-    """Returns True if an internet connection is available."""
+def check_connection(host="0.0.0.0", port=54, timeout=3) -> bool:
+    """Returns True if an internet connection is available,
+    checks if theres a connection on port 54, which is the default
+    port using for the RTSP stream
+    """
+
     try:
         socket.create_connection((host, port), timeout=timeout)
         return True
+    
     except OSError:
         return False
 
 def kill_conflicting_processes(device='/dev/video0'):
+
     """Find and kill any processes using the specified camera device."""
 
     logger.info("Hunting down conflicting processes")
@@ -52,6 +63,9 @@ def kill_conflicting_processes(device='/dev/video0'):
         return
     
     lines = output.strip().split("\n")
+
+    # Prevents the current process which is attempting to use the device
+    # from being killed
     if len(lines) <= 1:
         logger.info(f"No process found using {device}")
         return
@@ -59,10 +73,12 @@ def kill_conflicting_processes(device='/dev/video0'):
     for line in lines[1:]:
 
         parts = line.split()
-        if len(parts) < 2: continue
+        if len(parts) < 2: 
+            continue
 
         pid_str = parts[1]
-        if pid_str == str(os.getpid()): continue
+        if pid_str == str(os.getpid()): 
+            continue
 
         try:
             pid = int(pid_str)
@@ -80,7 +96,9 @@ def free_memory():
 
     logger.info("[Recovery] Attempting to free memory")
     collected = gc.collect()
+
     logger.info(f"[Recovery] Garbage collection complete: collected {collected} objects")
+
     mem = psutil.virtual_memory()
     logger.info(f"[Recovery] Memory before cache drop: {mem.percent}% used, {mem.available / (1024 * 1024):.2f} MB available")
 
@@ -114,18 +132,19 @@ def handle_disk_full(picam: Picamera2, ffmpeg_output: FfmpegOutput, e):
 
         try:
             ffmpeg_output.stop()
-
+            
         except Exception:
             pass
 
         logger.info("[Recovery] Recording stopped due to full disk. Attempting to free disk space")
-
         while True:
             disk_usage = psutil.disk_usage("/")
             free_mb = disk_usage.free() / (1024 * 1024)
+
             logger.info(f"[Recovery] Free disk space: {free_mb:.2f} MB")
-            if free_mb > 100:
-                break
+
+            if free_mb > 100: break
+
             time.sleep(2)
 
         logger.info("[Recovery] Sufficient disk space available. Restarting camera pipeline")
@@ -134,8 +153,8 @@ def handle_disk_full(picam: Picamera2, ffmpeg_output: FfmpegOutput, e):
     except Exception as e:
         logger.error(f"[Recovery] Exception while handling disk full: {e}")
 
-
 def handle_file_overflow(picam: Picamera2, ffmpeg_output: FfmpegOutput, e):
+
     logger.error(f"[Recovery] File table overflow: {e}")
 
     try:
@@ -146,7 +165,6 @@ def handle_file_overflow(picam: Picamera2, ffmpeg_output: FfmpegOutput, e):
         logger.error(f"[Recovery] Exception while handling file table overflow: {e}")
 
 # --- Location metadata functions ---
-
 def read_location_metadata(file_path: str):
     """
     Read latitude and longitude from the configuration file.
@@ -156,82 +174,51 @@ def read_location_metadata(file_path: str):
         with open(file_path, 'r') as f:
 
             lines = f.readlines()
+
             if len(lines) != 2:
                 raise ValueError("Configuration file must contain exactly two lines (latitude and longitude)")
             
             latitude = float(lines[0].strip())
             longitude = float(lines[1].strip())
-
             logger.info(f"Location metadata read: latitude={latitude}, longitude={longitude}")
+
             return latitude, longitude
         
     except Exception as e:
         logger.error(f"Failed to read configuration file: {e}")
         return None
 
-def add_location_metadata_to_sdp(sdp_path: str, latitude: float, longitude: float):
-    """
-    Append location metadata to the SDP file.
-    """
-    try:
-        with open(sdp_path, 'r') as f:
-            sdp_lines = f.readlines()
-
-        metadata = [
-            f"a=lat:{latitude}\n",
-            f"a=lon:{longitude}\n"
-        ]
-
-        sdp_lines.extend(metadata)
-
-        with open(sdp_path, 'w') as f:
-
-            f.writelines(sdp_lines)
-
-        logger.info("SDP metadata added successfully")
-
-    except Exception as e:
-        logger.error(f"Failed to add metadata to SDP: {e}")
-
 # --- FFmpeg Output Creation ---
 
 def create_ffmpeg_output() -> FfmpegOutput:
     """
     Create an FfmpegOutput for live RTSP streaming.
-    Generates an SDP file and injects location metadata read from a file.
     """
-    sdp_file_path = "/tmp/stream.sdp"
-    location_file_path = "location.txt"
-    ffmpeg_command = f"-sdp_file {sdp_file_path} -f rtsp rtsp://0.0.0.0:8554/stream"
+
+    BASE_URL = "rtsp://192.168.1.8:8554/test"
+
+    # Read location metadata from the file
+    lat, lon = read_location_metadata("location.txt")
+
+    if lat and lon:
+        RTSP_URL = f"{BASE_URL}?lat={lat}&lon={lon}"
+    else:
+        RTSP_URL = BASE_URL
+
+    ffmpeg_command = f"-rtsp_transport tcp -f rtsp {RTSP_URL}"
     ffmpeg_output = FfmpegOutput(ffmpeg_command, audio=False)
     ffmpeg_output.error_callback = ffmpeg_error_handler
-
-    # Start FFmpeg briefly to generate the SDP file.
-    ffmpeg_output.start()
-    time.sleep(1)  # Wait to ensure SDP file is generated.
-
-    location = read_location_metadata(location_file_path)
-
-    if location:
-
-        latitude, longitude = location
-
-        if os.path.exists(sdp_file_path):
-            add_location_metadata_to_sdp(sdp_file_path, latitude, longitude)
-
-        else:
-            logger.error("SDP file not found; unable to add location metadata.")
-    else:
-        logger.error("No valid location metadata; skipping SDP metadata injection.")
-
     return ffmpeg_output
+
 
 def create_ffmpeg_output_file(file_path: str) -> FfmpegOutput:
     """
     Create an FfmpegOutput for offline file recording.
-    SDP location metadata is not needed in this mode.
+    Location metadata is not needed in this mode.
+    Instead, after recording, we will push the file to MediaMTX RTSP server
+    which has this location metadata attached via query parameters
     """
-    ffmpeg_command = f"-f mp4 -y {file_path}"
+    ffmpeg_command = f"-f h264 -y {file_path}"
     ffmpeg_output = FfmpegOutput(ffmpeg_command, audio=False)
     return ffmpeg_output
 
@@ -245,7 +232,6 @@ def start_camera(max_tries=3, config_params=None) -> tuple[Picamera2, FfmpegOutp
 
     try:
         picamera = Picamera2()
-
         if not config_params:
             config_params = picamera.create_video_configuration(
                 encode="h264",
@@ -259,15 +245,23 @@ def start_camera(max_tries=3, config_params=None) -> tuple[Picamera2, FfmpegOutp
     
     except OSError as e:
 
+        # If the device is not recognized, this would be an irrecoverable 
+        # fatal error. The camera could have been damaged or removed when in 
+        # the production environment. To preserve the camera, the script is killed. 
         if e.errno == errno.ENODEV:
             logger.critical(f"[Camera initialization error]: {e}")
             sys.exit(1)
 
+        # if, for whatever reason, another process is also using the camera device
+        # which is not supposed to happen, the conflicting process is killed so the 
+        # device is solely used for initialization and usage of the camera.
         elif e.errno == errno.EBUSY:
             logger.error(f"[Camera initialization error] Device or resource busy: {e}")
             kill_conflicting_processes()
             return start_camera(max_tries-1, config_params)
         
+        # if the raspberry Pi runs out of memory during initialization, a free_memory 
+        # recovery function is run in an attempt to free some memory from the raspberry pi.
         elif e.errno == errno.ENOMEM:
             logger.error(f"[Camera initialization error] Out of memory: {e}")
             free_memory()
@@ -308,6 +302,7 @@ def start_file_recording(file_path: str, max_tries=3, config_params=None) -> tup
         sys.exit(1)
 
     try:
+
         picamera = Picamera2()
         if not config_params:
             config_params = picamera.create_video_configuration(
@@ -315,7 +310,6 @@ def start_file_recording(file_path: str, max_tries=3, config_params=None) -> tup
                 main={"size": (640, 480)},
                 controls={"FrameRate": 30}
             )
-
         picamera.configure(config_params)
         file_output = create_ffmpeg_output_file(file_path)
         return picamera, file_output
@@ -324,30 +318,31 @@ def start_file_recording(file_path: str, max_tries=3, config_params=None) -> tup
         logger.error(f"[File recording error]: {e}")
         return start_file_recording(file_path, max_tries-1, config_params)
 
-
 # --- Mode Functions ---
+
 def live_mode(picam: Picamera2, ffmpeg_output: FfmpegOutput):
 
     logger.info("[Live mode] Starting live RTSP stream")
-    picam.start()  # Ensure the camera is started
-    picam.start_recording(ffmpeg_output, format="h264")
+    picam.start()
+    encoder = H264Encoder()
+    picam.start_recording(encoder, ffmpeg_output)
 
     while True:
-
         if not check_connection():
             logger.warning("[Live mode] Internet connection lost. Switching to offline mode")
             picam.stop_recording()
             picam.stop()
             break
-
         time.sleep(1)
 
 def offline_mode(picam: Picamera2, file_output: FfmpegOutput, file_path: str, offline_timeout=300):
 
     start_time_val = time.time()
     logger.info("[Offline Mode] Starting file recording mode")
+
     picam.start()
-    picam.start_recording(file_output, format="h264")
+    encoder = H264Encoder()
+    picam.start_recording(encoder, file_output)
 
     while True:
 
@@ -359,20 +354,20 @@ def offline_mode(picam: Picamera2, file_output: FfmpegOutput, file_path: str, of
 
             if elapsed < offline_timeout:
                 logger.info("[Offline Mode] Replaying buffered footage to RTSP stream")
+                stream_buffer_to_rtsp(file_path)
 
             else:
                 logger.info("[Offline Mode] Buffer exceeded timeout. Discarding stored footage")
-                stream_buffer_to_rtsp(file_path)
 
                 try:
                     os.remove(file_path)
 
                 except Exception as e:
                     logger.error(f"[Offline Mode] Error deleting file: {e}")
-
             break
 
         if (time.time() - start_time_val) > offline_timeout:
+
             logger.info("[Offline Mode] Offline timeout reached. Stopping recording and discarding buffer")
             picam.stop_recording()
             picam.stop()
@@ -388,6 +383,12 @@ def offline_mode(picam: Picamera2, file_output: FfmpegOutput, file_path: str, of
         time.sleep(1)
 
 def stream_buffer_to_rtsp(file_path: str):
+
+    """
+    Function that streams the buffer video accumulated in the offline mode, back to the RTSP
+    URL (MediaMTX), with location query parameters attached. 
+    """
+
     logger.info(f"[Stream buffer] Streaming stored file {file_path} to RTSP")
 
     command = [
@@ -395,8 +396,9 @@ def stream_buffer_to_rtsp(file_path: str):
         "-re",
         "-i", file_path,
         "-c", "copy",
+        "-rtsp_transport", "tcp",
         "-f", "rtsp",
-        "rtsp://0.0.0.0:8554/stream"
+        "rtsp://192.168.1.8:8554/stream"
     ]
 
     try:
@@ -405,18 +407,25 @@ def stream_buffer_to_rtsp(file_path: str):
     except Exception as e:
         logger.error(f"[Stream Buffer] Error streaming buffer: {e}")
 
-
 # --- Restart Functions ---
+
 def restart_recording(picamera: Picamera2, ffmpeg_output: FfmpegOutput):
+
     logger.warning("[Recovery] Restarting camera pipeline")
+
     picamera.stop_recording()
     picamera.stop()
+
     time.sleep(2)
+
     picamera.start()
-    picamera.start_recording(ffmpeg_output, format="h264")
+    encoder = H264Encoder()
+    picamera.start_recording(encoder, ffmpeg_output)
 
 def restart_ffmpeg_output(picamera: Picamera2, ffmpeg_output: FfmpegOutput):
+
     logger.warning("[Recovery] Restarting FFmpeg process")
+
     picamera.stop_recording()
     picamera.stop()
     ffmpeg_output.stop()
@@ -424,16 +433,20 @@ def restart_ffmpeg_output(picamera: Picamera2, ffmpeg_output: FfmpegOutput):
     time.sleep(2)
 
     ffmpeg_output.start()
-    picamera.start_recording(ffmpeg_output, format="h264")
+    encoder = H264Encoder()
+    picamera.start_recording(encoder, ffmpeg_output)
     picamera.start()
+
     logger.info("[Recovery] FFmpeg restarted successfully")
 
 # --- Main Loop ---
 def mainloop():
-    OFFLINE_BUFFER_FILE = "offline_buffer.mp4"
-    OFFLINE_TIMEOUT = 400  # seconds
+
+    OFFLINE_BUFFER_FILE = "offline_buffer.h264"
+    OFFLINE_TIMEOUT = 400
 
     while True:
+
         try:
 
             if check_connection():
@@ -448,21 +461,22 @@ def mainloop():
 
             time.sleep(2)
 
+
+        # Exception handling during the mainloop run. The same exceptions that were handled in initialization
+        # are also handled in the mainloop. 
         except RuntimeError as e:
 
             error_message = str(e).lower()
             logger.error(f"[Mainloop] Runtime error: {error_message}")
 
-
-            if "camera not found" in error_message or "not found" in error_message:
+            if ("camera not found" in error_message) or ("not found" in error_message):
                 logger.critical("[Mainloop] Camera physically disconnected or not detected.")
                 sys.exit(1)
 
+            elif ("buffers" in error_message) or ("mmal error" in error_message) or ("encoder" in error_message):
 
-            elif "buffers" in error_message or "mmal error" in error_message or "encoder" in error_message:
                 logger.error("[Mainloop] Encoder issue detected, restarting camera")
                 restart_recording(picam, ffmpeg_output)
-
 
             else:
                 logger.error("[Mainloop] Unhandled runtime error; attempting recovery")
@@ -507,14 +521,11 @@ def mainloop():
             free_memory()
             restart_recording(picam, ffmpeg_output)
 
-
         except ConnectionError as e:
             logger.error(f"[Mainloop] Network related error: {e}")
             restart_ffmpeg_output(picam, ffmpeg_output)
 
-
         time.sleep(2)
-        logger.info("[Mainloop] Restarting camera pipeline")
 
 if __name__ == "__main__":
     mainloop()
