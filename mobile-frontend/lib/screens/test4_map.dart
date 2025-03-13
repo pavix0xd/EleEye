@@ -254,3 +254,59 @@ class _LocationScreenState extends State<LocationScreen> {
       });
     }
   }
+  void _setDestination(String locationName, LatLng coordinates) {
+    setState(() {
+      _destination = coordinates;
+
+      // Add destination marker
+      _markers.removeWhere((marker) => marker.markerId.value == "destination");
+      _markers.add(
+        Marker(
+          markerId: MarkerId("destination"),
+          position: _destination!,
+          infoWindow: InfoWindow(title: "Destination: ${locationName.toUpperCase()}"),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        ),
+      );
+
+      // Update the camera to show both current location and destination
+      _updateCameraToShowRoute();
+
+      // Calculate and display route
+      _getRoutePoints();
+    });
+  }
+
+  // Search via server API (placeholder - implement according to your API)
+  Future<bool> _searchViaServer(String query) async {
+    try {
+      // Endpoint should be replaced with your actual geocoding API
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:5003/geocode?query=${Uri.encodeComponent(query)}'),
+      ).timeout(Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['found'] == true) {
+          _setDestination(
+              data['name'] ?? query,
+              LatLng(data['latitude'], data['longitude'])
+          );
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      print("Server search error: $e");
+      // Fallback to default coordinates for Sri Lanka if server fails
+      if (query.length > 2) {
+        // Only use this as last resort - set to a default central Sri Lanka location
+        final centralSriLanka = LatLng(7.8731, 80.7718);
+        _showAlert("Using Approximate Location",
+            "Could not find exact coordinates. Showing an approximate location in Sri Lanka.");
+        _setDestination(query, centralSriLanka);
+        return true;
+      }
+      return false;
+    }
+  }
