@@ -219,7 +219,7 @@ socket.onDisconnect((_) {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color.fromARGB(255, 208, 198, 198),
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(color: Colors.black26, blurRadius: 4),
