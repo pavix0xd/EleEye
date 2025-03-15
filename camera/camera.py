@@ -235,7 +235,7 @@ def start_camera(max_tries=3, config_params=None) -> tuple[Picamera2, FfmpegOutp
         if not config_params:
             config_params = picamera.create_video_configuration(
                 encode="h264",
-                main={"size": (640, 480)},
+                main={"size": (640, 640)},
                 controls={"FrameRate": 30}
             )
 
@@ -285,9 +285,9 @@ def start_camera(max_tries=3, config_params=None) -> tuple[Picamera2, FfmpegOutp
         runtime_error = str(re).lower()
 
         if "buffer" in runtime_error:
-            logger.error("[Camera initialization error] Buffer related issue detected. Freeing memory and reducing quality")
+            logger.error("[Camera initialization error] Buffer related issue detected. Freeing memory and reducing framerate")
             free_memory()
-            config_params["main"]["size"] = (480, 480)
+            config_params["main"]["size"] = (640, 640)
             config_params["controls"]["FrameRate"] = 15
             return start_camera(max_tries-1, config_params)
         
@@ -307,7 +307,7 @@ def start_file_recording(file_path: str, max_tries=3, config_params=None) -> tup
         if not config_params:
             config_params = picamera.create_video_configuration(
                 encode="h264",
-                main={"size": (640, 480)},
+                main={"size": (640, 640)},
                 controls={"FrameRate": 30}
             )
         picamera.configure(config_params)
