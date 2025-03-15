@@ -172,7 +172,7 @@ socket.onDisconnect((_) {
           marker.position.longitude,
         ) / 1000;
 
-        if (distance < 0.5) {
+        if (distance < 0.6) {
           _showAlert("Warning!", "Elephant detected ${distance.toStringAsFixed(2)} km away!");
 
           Vibration.vibrate(duration: 500);
