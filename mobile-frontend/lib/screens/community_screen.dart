@@ -65,7 +65,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               background: Container(color: Colors.red),
               child: Card(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
                   title: Text(
                     "Elephant Sighting!",
