@@ -1,37 +1,9 @@
 import sys
 from unittest.mock import MagicMock
-import socket, re, cv2, errno, os, time, gc, subprocess, socket, psutil, logging, unittest, camera
+import socket, re, errno, os, time, gc, subprocess, socket, psutil, logging, unittest, camera
 from unittest.mock import patch, MagicMock, mock_open, call
 from urllib.parse import urlparse
 
-
-def test_rtsp_stream(rtsp_url):
-
-    """
-    Opens the RTSP stream using OpenCV and displays it in a window
-    """
-
-    cap = cv2.VideoCapture(rtsp_url)
-    if not cap.isOpened():
-        print("Error: Unable to open video stream")
-        return None
-
-    cv2.namedWindow("RTSP Stream", cv2.WINDOW_NORMAL)
-
-    while True:
-        ret, frame = cap.read()
-
-        if not ret:
-            print("Failed to receive frame. Exiting.")
-            return None
-
-        cv2.imshow("RTSP Stream", frame)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
 
 class TestFfmpegErrorHandler(unittest.TestCase):
 
@@ -319,6 +291,11 @@ class TestRestartFunctions(unittest.TestCase):
         self.dummy_picam.start_recording.assert_called()
         self.dummy_picam.start.assert_called()
 
+# fake time function used for patching the tests
+def fake_time():
+    fake_time.counter += 1
+    return fake_time.counter
+fake_time.counter = 0
 
 class TestModes(unittest.TestCase):
 
@@ -329,23 +306,20 @@ class TestModes(unittest.TestCase):
         self.encoder = MagicMock()
 
     @patch("camera.check_connection", side_effect=[False])
-    @patch("camera.time.sleep", side_effect=lambda x: (_ for _ in ()).throw(StopIteration))
+    @patch("camera.time.sleep", return_value=None)
     def test_live_mode(self, mock_sleep, mock_check):
 
-        with self.assertRaises(StopIteration):
-            camera.live_mode(self.dummy_picam, self.dummy_ffmpeg)
-
+        camera.live_mode(self.dummy_picam, self.dummy_ffmpeg)
         self.dummy_picam.stop_recording.assert_called()
         self.dummy_picam.stop.assert_called()
 
-    @patch("camera.check_connection", side_effect=[False])
-    @patch("camera.time.sleep", side_effect=lambda x: (_ for _ in ()).throw(StopIteration))
+    @patch("camera.time.time", side_effect=lambda: fake_time())
+    @patch("camera.check_connection", side_effect=[False, False, True])
+    @patch("camera.time.sleep", return_value=None)
     @patch("os.remove")
     def test_offline_mode(self, mock_remove, mock_sleep, mock_check):
 
-        with self.assertRaises(StopIteration):
-            camera.offline_mode(self.dummy_picam, self.dummy_ffmpeg, "dummy.h264", offline_timeout=1)
-
+        camera.offline_mode(self.dummy_picam, self.dummy_ffmpeg, "dummy.h264", offline_timeout=1)
         self.dummy_picam.stop_recording.assert_called()
         self.dummy_picam.stop.assert_called()
 
