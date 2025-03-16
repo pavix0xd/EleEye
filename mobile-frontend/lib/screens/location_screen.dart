@@ -232,7 +232,7 @@ socket.onDisconnect((_) {
                   hintText: "Enter destination",
                   border: InputBorder.none,
                   prefixIcon: Icon(Icons.location_on, color: Colors.red),
-                  contentPadding: EdgeInsets.symmetric(vertical: 15), 
+                  contentPadding: EdgeInsets.symmetric(vertical: 16), 
                 ),
               ),
             ),
