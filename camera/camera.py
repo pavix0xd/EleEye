@@ -33,7 +33,6 @@ def ffmpeg_error_handler(error):
         logger.info("[FFmpeg Error Handler] Unhandled exception type, forcing camera pipeline restart")
         # TODO: restart the camera pipeline
 
-
 # --- Recovery functions ---
 
 def check_connection(host="0.0.0.0", port=54, timeout=3) -> bool:
