@@ -310,3 +310,113 @@ class _LocationScreenState extends State<LocationScreen> {
       return false;
     }
   }
+   // Update camera to show both current location and destination
+  e bounds with padding
+    LatLngBounds bounds = LatLngBounds(
+      southwest: LatLng(
+        min(_currentLocation!.latitude, _destination!.latitude) - 0.05,
+        min(_currentLocation!.longitude, _destination!.longitude) - 0.05,
+      ),
+      northeast: LatLng(
+        max(_currentLocation!.latitude, _destination!.latitude) + 0.05,
+        max(_currentLocation!.longitude, _destination!.longitude) + 0.05,
+      ),
+    );
+
+    // Make sure the cvoid _updateCameraToShowRoute() {
+    //     if (_currentLocation == null || _destination == null) return;
+    // 
+    //     // Creatontroller is initialized
+    if (mapController != null) {
+      mapController.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+    }
+  }
+
+  // Helper method for min/max
+  double min(double a, double b) => a < b ? a : b;
+  double max(double a, double b) => a > b ? a : b;
+
+  // Method to get route between current location and destination
+  Future<void> _getRoutePoints() async {
+    if (_currentLocation == null || _destination == null) return;
+
+    try {
+      // Clear existing routes
+      setState(() {
+        _routes.clear();
+      });
+
+      // Try to get route from server
+      bool routeFromServerSuccess = await _getRouteFromServer();
+
+      // If server route fails, fall back to direct line
+      if (!routeFromServerSuccess) {
+        setState(() {
+          _routes.add(
+            Polyline(
+              polylineId: PolylineId("route"),
+              points: [_currentLocation!, _destination!],
+              color: Colors.blue,
+              width: 5,
+            ),
+          );
+        });
+      }
+    } catch (e) {
+      print("Error getting route: $e");
+      // Fallback to direct line if any error occurs
+      setState(() {
+        _routes.add(
+          Polyline(
+            polylineId: PolylineId("route"),
+            points: [_currentLocation!, _destination!],
+            color: Colors.blue,
+            width: 5,
+          ),
+        );
+      });
+    }
+  }
+
+  // Get route from server (placeholder - implement according to your routing API)
+  Future<bool> _getRouteFromServer() async {
+    try {
+      if (_currentLocation == null || _destination == null) return false;
+
+      // Replace with your actual routing API endpoint
+      final response = await http.get(
+        Uri.parse(
+            'http://10.0.2.2:5003/route?origin_lat=${_currentLocation!.latitude}'
+                '&origin_lng=${_currentLocation!.longitude}'
+                '&dest_lat=${_destination!.latitude}'
+                '&dest_lng=${_destination!.longitude}'
+        ),
+      ).timeout(Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['routes'] != null && data['routes'].isNotEmpty) {
+          List<LatLng> routePoints = [];
+          for (var point in data['routes'][0]['points']) {
+            routePoints.add(LatLng(point['lat'], point['lng']));
+          }
+
+          setState(() {
+            _routes.add(
+              Polyline(
+                polylineId: PolylineId("route"),
+                points: routePoints,
+                color: Colors.blue,
+                width: 5,
+              ),
+            );
+          });
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      print("Server route error: $e");
+      return false;
+    }
+  }
