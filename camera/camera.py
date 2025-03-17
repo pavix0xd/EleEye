@@ -19,19 +19,15 @@ def ffmpeg_error_handler(error):
     
     if isinstance(error, BrokenPipeError):
         logger.info("[FFmpeg Error handler] Detected BrokenPipeError - FFmpeg likely crashed")
-        # TODO: restart FFmpeg pipeline
 
     elif isinstance(error, OSError):
         if error.errno == errno.EPIPE:
             logger.info("[FFmpeg Error Handler] EPIPE (broken pipe)")
-            # TODO: restart FFmpeg
 
         else:
             logger.info(f"[FFmpeg Error Handler] OSError with errno={error.errno}")
-            # TODO: restart FFmpeg
     else:
         logger.info("[FFmpeg Error Handler] Unhandled exception type, forcing camera pipeline restart")
-        # TODO: restart the camera pipeline
 
 # --- Recovery functions ---
 
@@ -230,7 +226,12 @@ def start_camera(max_tries=3, config_params=None) -> tuple[Picamera2, FfmpegOutp
         sys.exit(1)
 
     try:
-        picamera = Picamera2()
+        try:
+            picamera = Picamera2()
+        
+        except IndexError as ie:
+            raise OSError(errno.ENODEV, "Camera not found") from ie
+    
         if not config_params:
             config_params = picamera.create_video_configuration(
                 encode="h264",
@@ -301,14 +302,19 @@ def start_file_recording(file_path: str, max_tries=3, config_params=None) -> tup
         sys.exit(1)
 
     try:
-
-        picamera = Picamera2()
+        try:
+            picamera = Picamera2()
+        
+        except IndexError as ie:
+            raise OSError(errno.ENODEV, "Camera not found") from ie
+        
         if not config_params:
             config_params = picamera.create_video_configuration(
                 encode="h264",
                 main={"size": (640, 640)},
                 controls={"FrameRate": 30}
             )
+            
         picamera.configure(config_params)
         file_output = create_ffmpeg_output_file(file_path)
         return picamera, file_output

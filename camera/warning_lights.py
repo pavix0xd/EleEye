@@ -38,4 +38,3 @@ def control_warning_lights(color, duration_seconds, rate_seconds):
         LED_STRIP.fill(color)
         time.sleep(rate_seconds)
         LED_STRIP.fill((0,0,0))
-        time.sleep(rate_seconds)
