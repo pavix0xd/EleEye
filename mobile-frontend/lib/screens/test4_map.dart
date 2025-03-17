@@ -420,3 +420,176 @@ class _LocationScreenState extends State<LocationScreen> {
       return false;
     }
   }
+    void _startJourney() {
+    if (_destination == null) {
+      _showAlert("Error", "Please enter a destination first");
+      return;
+    }
+
+    if (_currentLocation == null) {
+      _showAlert("Error", "Waiting for your current location. Please try again in a moment.");
+      return;
+    }
+
+    setState(() {
+      _isJourneyStarted = true;
+    });
+
+    // Ensure we're tracking position with high accuracy
+    _startLocationTracking();
+
+    // Update the route with the latest current location
+    _getRoutePoints();
+
+    // Focus on the route when journey starts
+    _updateCameraToShowRoute();
+
+    _showAlert("Journey Started", "Navigation to ${_destinationController.text} has begun. Stay alert for elephants nearby!");
+  }
+
+  void _animateCameraToPosition(LatLng position) {
+    if (mapController != null) {
+      mapController.animateCamera(
+        CameraUpdate.newLatLngZoom(position, 15),
+      );
+    }
+  }
+
+  void _checkForElephantsNearby() {
+    if (_currentLocation == null) return;
+
+    for (var marker in _markers) {
+      if (marker.markerId.value.startsWith("elephant")) {
+        double distance = Geolocator.distanceBetween(
+          _currentLocation!.latitude,
+          _currentLocation!.longitude,
+          marker.position.latitude,
+          marker.position.longitude,
+        );
+
+        // Convert to kilometers with 2 decimal places
+        double distanceKm = distance / 1000;
+
+        // Alert if elephant is within 500 meters
+        if (distanceKm < 0.5) {
+          _showAlert(
+              "Warning!",
+              "Elephant detected ${distanceKm.toStringAsFixed(2)} km away!"
+          );
+
+          // Vibrate to alert user
+          Vibration.vibrate(duration: 500);
+        }
+      }
+    }
+  }
+
+  void _showAlert(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(target: LatLng(7.8731, 80.7718), zoom: 7.8),
+            markers: _markers,
+            polylines: _routes,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            mapToolbarEnabled: false,
+            compassEnabled: true,
+            zoomControlsEnabled: false,
+          ),
+          Positioned(
+            top: 40,
+            left: 10,
+            right: 10,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(color: Colors.black26, blurRadius: 4),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _destinationController,
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                        hintText: "Enter destination (e.g., Colombo, Kandy)",
+                        border: InputBorder.none,
+                        prefixIcon: Icon(Icons.location_on, color: Colors.red),
+                        contentPadding: EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      onSubmitted: (_) => _searchDestination(),
+                    ),
+                  ),
+                  IconButton(
+                    icon: _isSearching
+                        ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Icon(Icons.search, color: Colors.blue),
+                    onPressed: _searchDestination,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: "recenter",
+            onPressed: _currentLocation != null
+                ? () => _animateCameraToPosition(_currentLocation!)
+                : null,
+            backgroundColor: Colors.white,
+            child: Icon(Icons.my_location, color: Colors.blue),
+          ),
+          SizedBox(height: 10),
+          FloatingActionButton.extended(
+            heroTag: "startJourney",
+            onPressed: (_destination != null && _currentLocation != null)
+                ? _startJourney
+                : null,
+            label: Text(
+                _isJourneyStarted ? "Restart Journey" : "Start Journey",
+                style: TextStyle(color: Colors.white)
+            ),
+            icon: Icon(Icons.directions, color: Colors.white),
+            backgroundColor: (_destination != null && _currentLocation != null)
+                ? Colors.teal
+                : Colors.grey,
+            elevation: 6,
+          ),
+        ],
+      ),
+    );
+  }
+}
