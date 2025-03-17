@@ -27,6 +27,10 @@ dependencies:
 
   # Networking & API Calls
   http: ^1.2.2
+  geolocator: ^11.0.0
+  socket_io_client: ^2.0.3+1
+  vibration: ^1.7.3
+  
 
   # Supabase for Authentication & Database
   supabase_flutter: ^2.8.3
