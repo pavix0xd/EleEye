@@ -47,9 +47,23 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       HapticFeedback.vibrate();
-      _showErrorSnackbar(e.toString());
+      _showErrorSnackbar(_getUserFriendlyError(e.toString()));
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  String _getUserFriendlyError(String error) {
+    if (error.contains("invalid-email")) {
+      return "Invalid email format. Please enter a valid email.";
+    } else if (error.contains("user-not-found")) {
+      return "User not found. Please check your email and try again.";
+    } else if (error.contains("wrong-password")) {
+      return "Incorrect password. Please try again.";
+    } else if (error.contains("network-request-failed")) {
+      return "Network error. Check your internet connection.";
+    } else {
+      return "Something went wrong. Please try again.";
     }
   }
 
@@ -144,18 +158,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscureText: isPassword && !_isPasswordVisible,
                 keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
                 textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'This field cannot be empty';
-                  }
-                  if (isEmail && !RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
-                    return 'Enter a valid email';
-                  }
-                  if (isPassword && value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
-                  return null;
-                },
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: isFocused ? Colors.white : Colors.white.withOpacity(0.1),
