@@ -6,7 +6,7 @@ const router = Router();
 
 const CheckFcmService = new checkFcmService ();
 
-router.post('/check-fcm', async (req, res) => {
+router.post('/checkAndUpdatefcm', async (req, res) => {
     const { userId, fcmToken } = req.body;
     
     if (!userId || !fcmToken) {
@@ -21,4 +21,4 @@ router.post('/check-fcm', async (req, res) => {
     }
 });
 
-export default router;
+export { router as checkFcmRoutes };
