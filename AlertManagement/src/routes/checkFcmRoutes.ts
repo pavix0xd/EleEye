@@ -1,8 +1,10 @@
 // checkFcmRoutes.ts
-import express from 'express';
-import { checkAndUpdateFcmToken } from '../services/notificationService';
+import { Router, Request, Response } from 'express';
+import { checkFcmService } from '../services/checkFcmService';
 
-const router = express.Router();
+const router = Router();
+
+const CheckFcmService = new checkFcmService ();
 
 router.post('/check-fcm', async (req, res) => {
     const { userId, fcmToken } = req.body;
@@ -12,7 +14,7 @@ router.post('/check-fcm', async (req, res) => {
     }
     
     try {
-        const result = await checkAndUpdateFcmToken(userId, fcmToken);
+        const result = await CheckFcmService.checkAndUpdateFcmToken(userId, fcmToken);
         return res.json({ success: true, message: result });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Internal Server Error' });
