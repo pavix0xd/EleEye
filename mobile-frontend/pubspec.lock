@@ -135,6 +135,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+<<<<<<< HEAD
   dbus:
     dependency: transitive
     description:
@@ -143,14 +144,23 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.11"
+=======
+>>>>>>> a1fb23ae (flutter plugins)
   device_info_plus:
     dependency: transitive
     description:
       name: device_info_plus
+<<<<<<< HEAD
       sha256: "306b78788d1bb569edb7c55d622953c2414ca12445b41c9117963e03afc5c513"
       url: "https://pub.dev"
     source: hosted
     version: "11.3.3"
+=======
+      sha256: "72d146c6d7098689ff5c5f66bcf593ac11efc530095385356e131070333e64da"
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.3.0"
+>>>>>>> a1fb23ae (flutter plugins)
   device_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -159,6 +169,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.2"
+<<<<<<< HEAD
   dio:
     dependency: transitive
     description:
@@ -175,6 +186,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+=======
+>>>>>>> a1fb23ae (flutter plugins)
   fake_async:
     dependency: transitive
     description:
@@ -190,8 +203,29 @@ packages:
       sha256: "289279317b4b16eb2bb7e271abccd4bf84ec9bdcbe999e278a94b804f5630418"
       url: "https://pub.dev"
     source: hosted
+<<<<<<< HEAD
     version: "2.1.4"
   file:
+=======
+    version: "2.1.3"
+  file:
+    dependency: transitive
+    description:
+      name: file
+      sha256: a3b4f84adafef897088c160faf7dfffb7696046cb13ae90b508c2cbc95d3b8d4
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.1"
+  firebase_auth:
+    dependency: "direct main"
+    description:
+      name: firebase_auth
+      sha256: "03483af6e67b7c4b696ca9386989a6cd5593569e1ac5af6907ea5f7fd9c16d8b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.3.4"
+  firebase_auth_platform_interface:
+>>>>>>> a1fb23ae (flutter plugins)
     dependency: transitive
     description:
       name: file
@@ -254,6 +288,7 @@ packages:
       sha256: faa5a76f6380a9b90b53bc3bdcb85bc7926a382e0709b9b5edac9f7746651493
       url: "https://pub.dev"
     source: hosted
+<<<<<<< HEAD
     version: "2.21.1"
   firebase_messaging:
     dependency: "direct main"
@@ -279,6 +314,9 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.10.4"
+=======
+    version: "2.19.0"
+>>>>>>> a1fb23ae (flutter plugins)
   fixnum:
     dependency: transitive
     description:
@@ -350,6 +388,7 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+<<<<<<< HEAD
   fluttertoast:
     dependency: "direct main"
     description:
@@ -374,46 +413,91 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "13.0.2"
+=======
+  geolocator:
+    dependency: "direct main"
+    description:
+      name: geolocator
+      sha256: "6cb9fb6e5928b58b9a84bdf85012d757fd07aab8215c5205337021c4999bad27"
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.1.0"
+>>>>>>> a1fb23ae (flutter plugins)
   geolocator_android:
     dependency: transitive
     description:
       name: geolocator_android
+<<<<<<< HEAD
       sha256: "7aefc530db47d90d0580b552df3242440a10fe60814496a979aa67aa98b1fd47"
       url: "https://pub.dev"
     source: hosted
     version: "4.6.1"
+=======
+      sha256: fcb1760a50d7500deca37c9a666785c047139b5f9ee15aa5469fae7dbbe3170d
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.6.2"
+>>>>>>> a1fb23ae (flutter plugins)
   geolocator_apple:
     dependency: transitive
     description:
       name: geolocator_apple
+<<<<<<< HEAD
       sha256: c4ecead17985ede9634f21500072edfcb3dba0ef7b97f8d7bc556d2d722b3ba3
       url: "https://pub.dev"
     source: hosted
     version: "2.3.9"
+=======
+      sha256: "419e50f754281d3606750af07b198ecfe938e8648d3e30a898d3ac342ab717e6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.12"
+>>>>>>> a1fb23ae (flutter plugins)
   geolocator_platform_interface:
     dependency: transitive
     description:
       name: geolocator_platform_interface
+<<<<<<< HEAD
       sha256: "386ce3d9cce47838355000070b1d0b13efb5bc430f8ecda7e9238c8409ace012"
       url: "https://pub.dev"
     source: hosted
     version: "4.2.4"
+=======
+      sha256: "722db30c0a2caa82a59d6655f04ef0a492da003036b880342cc67e6f1abc188f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.5"
+>>>>>>> a1fb23ae (flutter plugins)
   geolocator_web:
     dependency: transitive
     description:
       name: geolocator_web
+<<<<<<< HEAD
       sha256: "2ed69328e05cd94e7eb48bb0535f5fc0c0c44d1c4fa1e9737267484d05c29b5e"
       url: "https://pub.dev"
     source: hosted
     version: "4.1.1"
+=======
+      sha256: "49d8f846ebeb5e2b6641fe477a7e97e5dd73f03cbfef3fd5c42177b7300fb0ed"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
+>>>>>>> a1fb23ae (flutter plugins)
   geolocator_windows:
     dependency: transitive
     description:
       name: geolocator_windows
+<<<<<<< HEAD
       sha256: "53da08937d07c24b0d9952eb57a3b474e29aae2abf9dd717f7e1230995f13f0e"
       url: "https://pub.dev"
     source: hosted
     version: "0.2.3"
+=======
+      sha256: "4862e798b8a84ec300531888e7acd137b74637636069df230d79fabd110e2734"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.4"
+>>>>>>> a1fb23ae (flutter plugins)
   google_fonts:
     dependency: "direct main"
     description:
@@ -565,6 +649,7 @@ packages:
       sha256: "178d74305e7866013777bab2c3d8726205dc5a4dd935297175b19a23a2e66571"
       url: "https://pub.dev"
     source: hosted
+<<<<<<< HEAD
     version: "4.1.2"
   image_picker:
     dependency: "direct main"
@@ -646,6 +731,17 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.1"
+=======
+    version: "4.1.1"
+  js:
+    dependency: transitive
+    description:
+      name: js
+      sha256: f2c445dce49627136094980615a031419f7f3eb393237e4ecd97ac15dea343f3
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.7"
+>>>>>>> a1fb23ae (flutter plugins)
   leak_tracker:
     dependency: transitive
     description:
@@ -970,18 +1066,32 @@ packages:
     dependency: "direct main"
     description:
       name: socket_io_client
+<<<<<<< HEAD
       sha256: "180fdbc7685e32a849511bbf8b1c7bcc46ab0ff116f7024aa204b425bb3a1ffe"
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+=======
+      sha256: ede469f3e4c55e8528b4e023bdedbc20832e8811ab9b61679d1ba3ed5f01f23b
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.3+1"
+>>>>>>> a1fb23ae (flutter plugins)
   socket_io_common:
     dependency: transitive
     description:
       name: socket_io_common
+<<<<<<< HEAD
       sha256: a914df90f25003fea62dbd0b186d98b745b1b72c16be87418e15a2511d25dadb
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+=======
+      sha256: "2ab92f8ff3ebbd4b353bf4a98bee45cc157e3255464b2f90f66e09c4472047eb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.3"
+>>>>>>> a1fb23ae (flutter plugins)
   source_span:
     dependency: transitive
     description:
@@ -991,6 +1101,9 @@ packages:
     source: hosted
     version: "1.10.1"
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> a1fb23ae (flutter plugins)
   sprintf:
     dependency: transitive
     description:
@@ -999,8 +1112,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.0"
+<<<<<<< HEAD
 =======
 >>>>>>> cb8df76c (bottomNavBar)
+=======
+>>>>>>> a1fb23ae (flutter plugins)
   stack_trace:
     dependency: transitive
     description:
@@ -1106,6 +1222,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+<<<<<<< HEAD
   url_launcher:
     dependency: "direct main"
     description:
@@ -1170,6 +1287,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.4"
+=======
+>>>>>>> a1fb23ae (flutter plugins)
   uuid:
     dependency: transitive
     description:
@@ -1190,18 +1309,32 @@ packages:
     dependency: "direct main"
     description:
       name: vibration
+<<<<<<< HEAD
       sha256: "804ee8f9628f31ee71fbe6137a2bc6206a64e101ec22cd9dd6d3a7dc0272591b"
       url: "https://pub.dev"
     source: hosted
     version: "3.1.3"
+=======
+      sha256: "06588a845a4ebc73ab7ff7da555c2b3dbcd9676164b5856a38bf0b2287f1045d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.9.0"
+>>>>>>> a1fb23ae (flutter plugins)
   vibration_platform_interface:
     dependency: transitive
     description:
       name: vibration_platform_interface
+<<<<<<< HEAD
       sha256: "03e9deaa4df48a1a6212e281bfee5f610d62e9247929dd2f26f4efd4fa5e225c"
       url: "https://pub.dev"
     source: hosted
     version: "0.1.0"
+=======
+      sha256: "6ffeee63547562a6fef53c05a41d4fdcae2c0595b83ef59a4813b0612cd2bc36"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.3"
+>>>>>>> a1fb23ae (flutter plugins)
   vm_service:
     dependency: transitive
     description:
@@ -1217,6 +1350,7 @@ packages:
       sha256: "868d88a33d8a87b18ffc05f9f030ba328ffefba92d6c127917a2ba740f9cfe4a"
       url: "https://pub.dev"
     source: hosted
+<<<<<<< HEAD
     version: "1.1.1"
   web_socket:
     dependency: transitive
@@ -1234,22 +1368,39 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+=======
+    version: "1.1.0"
+>>>>>>> a1fb23ae (flutter plugins)
   win32:
     dependency: transitive
     description:
       name: win32
+<<<<<<< HEAD
       sha256: b89e6e24d1454e149ab20fbb225af58660f0c0bf4475544650700d8e2da54aef
       url: "https://pub.dev"
     source: hosted
     version: "5.11.0"
+=======
+      sha256: dc6ecaa00a7c708e5b4d10ee7bec8c270e9276dfcab1783f57e9962d7884305f
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.12.0"
+>>>>>>> a1fb23ae (flutter plugins)
   win32_registry:
     dependency: transitive
     description:
       name: win32_registry
+<<<<<<< HEAD
       sha256: "6f1b564492d0147b330dd794fee8f512cec4977957f310f9951b5f9d83618dae"
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+=======
+      sha256: "21ec76dfc731550fd3e2ce7a33a9ea90b828fdf19a5c3bcf556fa992cfa99852"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.5"
+>>>>>>> a1fb23ae (flutter plugins)
   xdg_directories:
     dependency: transitive
     description:
@@ -1276,8 +1427,12 @@ packages:
     version: "2.0.3"
 sdks:
 <<<<<<< HEAD
+<<<<<<< HEAD
   dart: ">=3.7.0 <4.0.0"
 =======
   dart: ">=3.7.0-0 <4.0.0"
 >>>>>>> cb8df76c (bottomNavBar)
+=======
+  dart: ">=3.7.0 <4.0.0"
+>>>>>>> a1fb23ae (flutter plugins)
   flutter: ">=3.27.0"
