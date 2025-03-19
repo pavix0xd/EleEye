@@ -3,8 +3,11 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+<<<<<<< HEAD
   file_selector_linux
   gtk
+=======
+>>>>>>> 1845605c (fix errors)
   url_launcher_linux
 )
 

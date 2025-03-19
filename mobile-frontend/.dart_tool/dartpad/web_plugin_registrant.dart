@@ -13,6 +13,7 @@ import 'package:geolocator_web/geolocator_web.dart';
 import 'package:google_maps_flutter_web/google_maps_flutter_web.dart';
 import 'package:google_sign_in_web/google_sign_in_web.dart';
 import 'package:location_web/location_web.dart';
+import 'package:url_launcher_web/url_launcher_web.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 void registerPlugins([final Registrar? pluginRegistrar]) {
@@ -24,5 +25,6 @@ void registerPlugins([final Registrar? pluginRegistrar]) {
   GoogleMapsPlugin.registerWith(registrar);
   GoogleSignInPlugin.registerWith(registrar);
   LocationWebPlugin.registerWith(registrar);
+  UrlLauncherPlugin.registerWith(registrar);
   registrar.registerMessageHandler();
 }
