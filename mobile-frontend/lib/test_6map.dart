@@ -53,3 +53,91 @@ class _LocationScreenState extends State<LocationScreen> {
     "mannar": LatLng(8.9697, 79.9045),
     "mullaitivu": LatLng(9.2695, 80.8139),
   };
+  
+  @override
+  void initState() {
+    super.initState();
+    _setupSocketConnection();
+    _checkLocationPermissions();
+    // Start location tracking immediately to ensure accurate position
+    _startLocationTracking();
+  }
+
+  @override
+  void dispose() {
+    socket.dispose();
+    _positionStream?.cancel();
+    _destinationController.dispose();
+    super.dispose();
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    // When map is created, immediately update to current location if available
+    if (_currentLocation != null) {
+      _animateCameraToPosition(_currentLocation!);
+    }
+  }
+
+  Future<void> _checkLocationPermissions() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        _showAlert("Permission Denied", "Location access is required for tracking.");
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      _showAlert("Permission Denied", "Enable location access in device settings.");
+      return;
+    }
+    _determineCurrentLocation();
+  }
+
+  Future<void> _determineCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        _currentLocation = LatLng(position.latitude, position.longitude);
+        _updateCurrentLocationMarker();
+      });
+      _fetchNearbyElephants();
+
+      // Animate camera to current location when first determined
+      if (_currentLocation != null && mapController != null) {
+        _animateCameraToPosition(_currentLocation!);
+      }
+    } catch (e) {
+      _showAlert("Error", "Failed to get location: ${e.toString()}");
+    }
+  }
+
+  // Start continuous location tracking
+  void _startLocationTracking() {
+    // Cancel any existing stream first
+    _positionStream?.cancel();
+
+    // Start a new position stream with high accuracy
+    _positionStream = Geolocator.getPositionStream(
+      locationSettings: LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5, // Update every 5 meters
+      ),
+    ).listen((Position position) {
+      setState(() {
+        _currentLocation = LatLng(position.latitude, position.longitude);
+        _updateCurrentLocationMarker();
+
+        // Update route if journey is started
+        if (_isJourneyStarted && _destination != null) {
+          _getRoutePoints();
+        }
+      });
+
+      _fetchNearbyElephants();
+      if (_isJourneyStarted) {
+        _checkForElephantsNearby();
+      }
+    });
+  }
