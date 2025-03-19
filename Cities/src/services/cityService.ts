@@ -1,6 +1,7 @@
 import { supabase } from "../config/supabaseClient";
 import { City } from "../models/city";
 
+// Function to fetch all cities from the database
 export const getAllCities = async (): Promise<City[]> => {
   const { data, error } = await supabase.from("cities").select("*");
 
@@ -12,6 +13,7 @@ export const getAllCities = async (): Promise<City[]> => {
   return data as City[];
 };
 
+// Function to search for cities based on a user-provided query
 export const searchCities = async (query: string): Promise<City[]> => {
   const { data, error } = await supabase
     .from("cities")

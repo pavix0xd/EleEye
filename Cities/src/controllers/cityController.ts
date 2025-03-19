@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { getAllCities, searchCities } from "../services/cityService";
 
+// Controller function to fetch all cities from the database
 export const getCities = async (req: Request, res: Response): Promise<void> => {
   try {
     const cities = await getAllCities();
@@ -10,6 +11,7 @@ export const getCities = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+// Controller function to search for cities based on a query
 export const searchCity = async (req: Request, res: Response): Promise<void> => {
   const { query } = req.query;
   if (!query) {
