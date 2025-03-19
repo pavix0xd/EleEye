@@ -1,8 +1,8 @@
-import 'package:demo/screens/auth_screen.dart';
-import 'package:demo/screens/forgot_pass_screen.dart';
+import 'package:eleeye/screens/auth_screen.dart';
+import 'package:eleeye/screens/forgot_pass_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:demo/screens/signup_screen.dart';
-import 'package:demo/screens/map_screen.dart';
+import 'package:eleeye/screens/signup_screen.dart';
+import 'package:eleeye/screens/bottom_nav_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => MapPage()),
+          MaterialPageRoute(builder: (context) => const BottomNavBar()),
         );
       }
     } catch (e) {
@@ -63,39 +63,28 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 80),
               const Text(
                 "Welcome Back",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
               ),
               const Text(
                 "Hey! Good to see you again",
                 style: TextStyle(fontSize: 16, color: Colors.white70),
               ),
               const SizedBox(height: 40),
-
-              // Email field
               _buildTextField("Email", _emailController),
               const SizedBox(height: 20),
-
-              // Password field
               _buildTextField("Password", _passwordController, isPassword: true),
               const SizedBox(height: 10),
-
-              // Forgot password link with press effect
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTapDown: (_) => setState(() {}),
-                  onTapUp: (_) => Navigator.push(
+                  onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
                   ),
@@ -106,52 +95,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 30),
-
-              // Login button with press effect
-              Center(
-                child: GestureDetector(
-                  onTapDown: (_) => setState(() => _isButtonPressed = true),
-                  onTapUp: (_) {
-                    setState(() => _isButtonPressed = false);
-                    login();
-                  },
-                  onTapCancel: () => setState(() => _isButtonPressed = false),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 100),
-                    width: double.infinity,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: _isButtonPressed ? Colors.teal.shade700 : Colors.teal.shade900,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: _isButtonPressed
-                          ? [
-                              BoxShadow(
-                                color: Colors.teal.shade700.withOpacity(0.5),
-                                blurRadius: 10,
-                                spreadRadius: 1,
-                              ),
-                            ]
-                          : [],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Log In',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              _buildLoginButton(),
               const SizedBox(height: 30),
-
-              // Sign up link with press effect
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text("Don't have an account?  ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                   GestureDetector(
-                    onTapDown: (_) => setState(() {}),
-                    onTapUp: (_) => Navigator.push(
+                    onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const SignupScreen()),
                     ),
@@ -169,48 +120,80 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // TextField with focus effect
+  // TextField builder (Matches SignupScreen styling)
   Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
         const SizedBox(height: 8),
-        Focus(
-          child: Builder(
-            builder: (context) {
-              final isFocused = Focus.of(context).hasFocus;
-              return TextField(
-                controller: controller,
-                obscureText: isPassword && !_isPasswordVisible,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: isFocused ? Colors.white : Colors.grey.shade300,
-                  hintText: label,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(color: Colors.teal, width: 2),
-                  ),
-                  suffixIcon: isPassword
-                      ? IconButton(
-                          icon: Icon(
-                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                        )
-                      : null,
-                ),
-              );
-            },
+        TextField(
+          controller: controller,
+          obscureText: isPassword && !_isPasswordVisible,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.2),
+            hintText: label,
+            hintStyle: const TextStyle(color: Colors.white70),
+            contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: const BorderSide(color: Colors.teal, width: 2),
+            ),
+            suffixIcon: isPassword
+                ? IconButton(
+                    icon: Icon(
+                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.white70,
+                    ),
+                    onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                  )
+                : null,
           ),
+          style: const TextStyle(color: Colors.white),
+          cursorColor: Colors.white,
         ),
       ],
+    );
+  }
+
+  // Login button (Matches SignupScreen styling)
+  Widget _buildLoginButton() {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isButtonPressed = true),
+      onTapUp: (_) {
+        setState(() => _isButtonPressed = false);
+        login();
+      },
+      onTapCancel: () => setState(() => _isButtonPressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        width: double.infinity,
+        height: 50,
+        decoration: BoxDecoration(
+          color: _isButtonPressed ? Colors.teal.shade700 : Colors.teal.shade900,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: _isButtonPressed
+              ? [
+                  BoxShadow(
+                    color: Colors.teal.shade700.withOpacity(0.5),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : [],
+        ),
+        child: const Center(
+          child: Text(
+            'Log In',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+        ),
+      ),
     );
   }
 }

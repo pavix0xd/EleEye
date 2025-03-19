@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
@@ -200,10 +201,14 @@ socket.onDisconnect((_) {
       },
     );
   }
+=======
+
+>>>>>>> main
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+<<<<<<< HEAD
       body: Stack(
         children: [
           GoogleMap(
@@ -263,6 +268,10 @@ socket.onDisconnect((_) {
           ),
         ],
       ),
+=======
+      appBar: AppBar(title: Text("Location")),
+      
+>>>>>>> main
     );
   }
 }

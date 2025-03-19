@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:flutter/material.dart';
+=======
+>>>>>>> main
 
 void main() {
   runApp(MyApp());
@@ -28,6 +31,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+<<<<<<< HEAD
      appBar: AppBar(
   leading: IconButton(
     icon: Icon(Icons.arrow_back),
@@ -101,6 +105,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
         currentIndex: 1,
         selectedItemColor: Colors.teal.shade900,
       ),
+=======
+      appBar: AppBar(title: Text("Community")),
+      
+>>>>>>> main
     );
   }
 }

@@ -1,5 +1,5 @@
-import 'package:demo/screens/auth_screen.dart';
-import 'package:demo/screens/login_screen.dart';
+import 'package:eleeye/screens/auth_screen.dart';
+import 'package:eleeye/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -10,47 +10,56 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final authService = AuthScreen(); // Auth service
+  final AuthScreen authService = AuthScreen(); 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+  bool _isButtonPressed = false;
 
   void signUp() async {
-  final email = _emailController.text.trim();
-  final password = _passwordController.text.trim();
-  final confirmPassword = _confirmPasswordController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
 
-  if (password != confirmPassword) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Passwords do not match'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
-  try {
-    // Perform sign up
-    await authService.signUpWithEmailPassword(email, password);
-    
-    // Redirect to login screen after successful sign-up
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()), 
-    );
-  } catch (e) {
-    if (mounted) {
+    if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
+        const SnackBar(
+          content: Text('Passwords do not match'),
           backgroundColor: Colors.red,
         ),
       );
+      return;
+    }
+
+    try {
+      await authService.signUpWithEmailPassword(email, password);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Signup successful! Redirecting to login...'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
-}
-
 
   @override
   void dispose() {
@@ -74,35 +83,45 @@ class _SignupScreenState extends State<SignupScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                const SizedBox(height: 40),
-                const Text(
-                  "Hello there!",
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const Text(
-                  "Register below with your details.",
-                  style: TextStyle(fontSize: 16, color: Colors.white70),
-                ),
-                const SizedBox(height: 40),
-                _buildTextField("Email", _emailController),
-                const SizedBox(height: 20),
-                _buildTextField("Password", _passwordController, isPassword: true),
-                const SizedBox(height: 20),
-                _buildTextField("Confirm Password", _confirmPasswordController, isPassword: true),
-                const SizedBox(height: 30),
-                _buildSignupButton(),
-              ],
-            ),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 80),
+              const Text(
+                "Hello there!",
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const Text(
+                "Register below with your details.",
+                style: TextStyle(fontSize: 16, color: Colors.white70),
+              ),
+              const SizedBox(height: 40),
+              _buildTextField("Email", _emailController),
+              const SizedBox(height: 20),
+              _buildTextField("Password", _passwordController, isPassword: true),
+              const SizedBox(height: 20),
+              _buildTextField("Confirm Password", _confirmPasswordController, isPassword: true),
+              const SizedBox(height: 30),
+              _buildSignupButton(),
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Already have an account?  ", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  GestureDetector(
+                    onTap: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    ),
+                    child: const Text(
+                      "Log In",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -115,23 +134,38 @@ class _SignupScreenState extends State<SignupScreen> {
       children: [
         Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
         const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          obscureText: isPassword,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.grey.shade300,
-            border: InputBorder.none,
-            hintText: label,
-            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide.none,
-            ),
+        Focus(
+          child: Builder(
+            builder: (context) {
+              final isFocused = Focus.of(context).hasFocus;
+              return TextField(
+                controller: controller,
+                obscureText: isPassword && !_isPasswordVisible,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: isFocused ? Colors.white : Colors.white.withOpacity(0.1),
+                  hintText: label,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.teal, width: 2),
+                  ),
+                  suffixIcon: isPassword
+                      ? IconButton(
+                          icon: Icon(
+                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey.shade700,
+                          ),
+                          onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                        )
+                      : null,
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -139,20 +173,35 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildSignupButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+    return Center(
       child: GestureDetector(
-        onTap: signUp,
-        child: Container(
-          padding: const EdgeInsets.all(20),
+        onTapDown: (_) => setState(() => _isButtonPressed = true),
+        onTapUp: (_) {
+          setState(() => _isButtonPressed = false);
+          signUp();
+        },
+        onTapCancel: () => setState(() => _isButtonPressed = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          width: double.infinity,
+          height: 50,
           decoration: BoxDecoration(
-            color: Colors.teal.shade900,
-            borderRadius: BorderRadius.circular(12),
+            color: _isButtonPressed ? Colors.teal.shade700 : Colors.teal.shade900,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: _isButtonPressed
+                ? [
+                    BoxShadow(
+                      color: Colors.teal.shade700.withOpacity(0.5),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : [],
           ),
           child: const Center(
             child: Text(
               'Sign Up',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
         ),

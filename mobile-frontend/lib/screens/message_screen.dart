@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 
 
@@ -38,11 +39,53 @@ class _MapPageState extends State<MessageScreen> {
     _startLocationUpdates();
   }
 
+=======
+import 'dart:async';
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class MessageScreen extends StatefulWidget {
+  const MessageScreen({Key? key}) : super(key: key);
+
+  @override
+  _MapPageState createState() => _MapPageState();
+}
+
+class _MapPageState extends State<MessageScreen> {
+  static const LatLng _center = LatLng(7.9333296, 81.0);
+
+  LatLng? _currentLocation;
+  LatLng? _markedLocation;
+  List<LatLng> _routePoints = [];
+  LatLng _cameraPosition = _center;
+
+  final Location _location = Location();
+  GoogleMapController? _mapController;
+  Timer? _timer;
+  final Random _random = Random();
+  final String _googleApiKey = "AIzaSyAELGA7uZB-5iyxP7n-_K8D2JuP5xoZonY";
+
+  @override
+  void initState() {
+    super.initState();
+    _currentLocation = _center;
+    _startLocationUpdates();
+  }
+
+>>>>>>> main
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GoogleMap(
+<<<<<<< HEAD
         initialCameraPosition: CameraPosition(target: _cameraPosition, zoom: 16.0),
+=======
+        initialCameraPosition: CameraPosition(target: _cameraPosition, zoom: 15.0),
+>>>>>>> main
         markers: {
           if (_currentLocation != null)
             Marker(
@@ -61,7 +104,11 @@ class _MapPageState extends State<MessageScreen> {
           if (_routePoints.isNotEmpty)
             Polyline(
               polylineId: PolylineId("route"),
+<<<<<<< HEAD
               color: const Color.fromARGB(255, 68, 123, 168),
+=======
+              color: const Color.fromARGB(255, 20, 148, 254),
+>>>>>>> main
               width: 5,
               points: _routePoints,
             ),
@@ -85,7 +132,11 @@ class _MapPageState extends State<MessageScreen> {
     );
   }
 
+<<<<<<< HEAD
   
+=======
+  /// Updates the user's real-time location
+>>>>>>> main
   void _startLocationUpdates() {
     _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       if (!mounted) {
@@ -104,7 +155,11 @@ class _MapPageState extends State<MessageScreen> {
     });
   }
 
+<<<<<<< HEAD
   
+=======
+  /// Moves smoothly from _currentLocation to target
+>>>>>>> main
   void _moveGraduallyTo(LatLng target) {
     const int steps = 20;
     const Duration stepDuration = Duration(milliseconds: 200);
@@ -129,24 +184,40 @@ class _MapPageState extends State<MessageScreen> {
 
       stepCount++;
 
+<<<<<<< HEAD
       
+=======
+      // Update the route dynamically if a marker is set
+>>>>>>> main
       if (_markedLocation != null) {
         _fetchRoute();
       }
     });
   }
 
+<<<<<<< HEAD
  
+=======
+  /// User taps on the map to set a destination marker
+>>>>>>> main
   void _setMarkedLocation(LatLng location) {
     setState(() {
       _markedLocation = location;
     });
 
+<<<<<<< HEAD
    
     _fetchRoute();
   }
 
   
+=======
+    // Fetch road-following route
+    _fetchRoute();
+  }
+
+  /// Fetches road-following route from Google Directions API
+>>>>>>> main
   Future<void> _fetchRoute() async {
     if (_currentLocation == null || _markedLocation == null) return;
 
@@ -154,7 +225,11 @@ class _MapPageState extends State<MessageScreen> {
         "https://maps.googleapis.com/maps/api/directions/json?"
         "origin=${_currentLocation!.latitude},${_currentLocation!.longitude}"
         "&destination=${_markedLocation!.latitude},${_markedLocation!.longitude}"
+<<<<<<< HEAD
         "&mode=driving" 
+=======
+        "&mode=driving" // Change to driving, biking, or walking
+>>>>>>> main
         "&key=$_googleApiKey";
 
     final response = await http.get(Uri.parse(url));
@@ -178,7 +253,11 @@ class _MapPageState extends State<MessageScreen> {
     }
   }
 
+<<<<<<< HEAD
   
+=======
+  /// Moves the camera to the user's current location
+>>>>>>> main
   void _moveToUserLocation() {
     if (_currentLocation != null && _mapController != null) {
       _mapController!.animateCamera(
