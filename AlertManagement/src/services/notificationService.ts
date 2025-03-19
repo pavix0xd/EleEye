@@ -43,21 +43,34 @@ export class NotificationService {
 
   // Method to retrieve FCM token for the user from Supabase
   async getUserFCMToken(userId: string): Promise<string | null> {
+    
     console.log(`Retrieving FCM token for userId: ${userId}`);
 
-    // Fetch token from the Supabase users table (make sure the table has fcm_token column)
-    const { data, error } = await supabase
-      .from('userInfo')  // Make sure 'userInfo' is your table name
-      .select('fcm_token')  // Select the fcm_token column
-      .eq('id', userId)  // Match the user_id column with the provided userId
-      .single();  // Get a single row
+    //try {
+        // Fetch token from the Supabase users table (make sure the table has fcm_token column)
+        const { data, error } = await supabase
+            .from('userInfo')  // Make sure 'userInfo' is your table name
+            .select('fcm_token')  // Select the fcm_token column
+            .eq('id', userId)  // Match the user_id column with the provided userId
+            .single();  // Get a single row
 
-    if (error || !data) {
-      console.error('Error retrieving FCM token:', error || 'No data found');
-      return null;
-    }
+        if (error) {
+            throw new Error(`Error retrieving FCM token: ${error.message}`);
+        }
 
-    console.log('Retrieved FCM token:', data.fcm_token);
-    return data.fcm_token;  // Return the token
-  }
+        if (!data) {
+            throw new Error('No data found for the given userId');
+        }
+
+        console.log('Retrieved FCM token:', data.fcm_token);
+        return data.fcm_token;  // Return the token
+    // } catch (err) {
+    //     console.error('Error in getUserFCMToken:', err);
+    //     return null;  // Return null in case of an error
+    // }
+
 }
+
+
+}
+
