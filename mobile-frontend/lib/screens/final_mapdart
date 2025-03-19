@@ -1,0 +1,392 @@
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:async';
+import 'package:vibration/vibration.dart';
+
+class LocationScreen extends StatefulWidget {
+  @override
+  _LocationScreenState createState() => _LocationScreenState();
+}
+
+class _LocationScreenState extends State<LocationScreen> {
+  late GoogleMapController mapController;
+  LatLng? _currentLocation;
+  LatLng? _destination;
+  bool _isJourneyStarted = false;
+  final Set<Marker> _markers = {};
+  final Set<Polyline> _routes = {};
+  final TextEditingController _destinationController = TextEditingController();
+  late io.Socket socket;
+  StreamSubscription<Position>? _positionStream;
+  bool _isSearching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupSocketConnection();
+    _checkLocationPermissions();
+    _startLocationTracking();
+  }
+
+  @override
+  void dispose() {
+    socket.dispose();
+    _positionStream?.cancel();
+    _destinationController.dispose();
+    super.dispose();
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    if (_currentLocation != null) {
+      _animateCameraToPosition(_currentLocation!);
+    }
+  }
+
+  Future<void> _searchDestination() async {
+    final query = _destinationController.text.trim().toLowerCase();
+    if (query.isEmpty) {
+      _showAlert("Error", "Please enter a destination");
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      final response = await http.get(Uri.parse(
+          'http://10.0.2.2:5002/api/cities/search?query=${Uri.encodeComponent(query)}'));
+
+      if (response.statusCode == 200) {
+        List<dynamic> results = jsonDecode(response.body);
+        if (results.isNotEmpty) {
+          var city = results.first;
+          setState(() {
+            _destination = LatLng(city['latitude'], city['longitude']);
+            _markers.add(
+              Marker(
+                markerId: MarkerId("destination"),
+                position: _destination!,
+                infoWindow: InfoWindow(title: "Destination: ${city['name_en']}"),
+                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+              ),
+            );
+            _isJourneyStarted = false;
+          });
+        } else {
+          _showAlert("Location Not Found", "No results for '$query'. Try another city.");
+        }
+      } else {
+        _showAlert("Error", "Failed to fetch locations.");
+      }
+    } catch (e) {
+      _showAlert("Network Error", "Check your connection.");
+    } finally {
+      setState(() {
+        _isSearching = false;
+      });
+    }
+  }
+
+  Future<void> _getRoutePoints() async {
+    if (_currentLocation == null || _destination == null) return;
+
+    final String apiKey = "AIzaSyAELGA7uZB-5iyxP7n-_K8D2JuP5xoZonY";
+    final String url =
+        "https://maps.googleapis.com/maps/api/directions/json?origin=${_currentLocation!.latitude},${_currentLocation!.longitude}&destination=${_destination!.latitude},${_destination!.longitude}&key=$apiKey";
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data["routes"].isNotEmpty) {
+          List<LatLng> polylineCoordinates = [];
+          var points = data["routes"][0]["overview_polyline"]["points"];
+          polylineCoordinates = _decodePolyline(points);
+
+          setState(() {
+            _routes.clear();
+            _routes.add(Polyline(
+              polylineId: PolylineId("route"),
+              points: polylineCoordinates,
+              color: Colors.blue,
+              width: 5,
+            ));
+            _isJourneyStarted = true;
+          });
+        }
+      }
+    } catch (e) {
+      print("Error fetching route: $e");
+    }
+  }
+
+  List<LatLng> _decodePolyline(String encoded) {
+    List<LatLng> polylineCoordinates = [];
+    int index = 0, len = encoded.length;
+    int lat = 0, lng = 0;
+
+    while (index < len) {
+      int b, shift = 0, result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lng += dlng;
+
+      polylineCoordinates.add(LatLng(lat / 1E5, lng / 1E5));
+    }
+    return polylineCoordinates;
+  }
+
+  void _showAlert(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // New Search Bar Widget
+  Widget _buildSearchBar() {
+    return Positioned(
+      top: 40,
+      left: 20,
+      right: 20,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _destinationController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter destination city...',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.all(12),
+                  ),
+                  onSubmitted: (_) => _searchDestination(),
+                ),
+              ),
+              IconButton(
+                icon: _isSearching
+                    ? CircularProgressIndicator(strokeWidth: 2)
+                    : Icon(Icons.search),
+                onPressed: _isSearching ? null : _searchDestination,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Journey Control Button
+  Widget _buildJourneyButton() {
+    return Positioned(
+      bottom: 40,
+      right: 20,
+      child: FloatingActionButton.extended(
+        icon: Icon(_isJourneyStarted ? Icons.stop : Icons.directions),
+        label: Text(_isJourneyStarted ? 'Stop Journey' : 'Start Journey'),
+        backgroundColor: _isJourneyStarted ? Colors.red : Colors.blue,
+        onPressed: () {
+          setState(() {
+            _isJourneyStarted = !_isJourneyStarted;
+            if (!_isJourneyStarted) {
+              _routes.clear();
+              _destination = null;
+              _destinationController.clear();
+              _markers.removeWhere((m) => m.markerId.value == "destination");
+            }
+          });
+          if (_isJourneyStarted && _destination != null) {
+            _getRoutePoints();
+          }
+        },
+      ),
+    );
+  }
+
+  // Socket Connection for Elephant Location Updates
+  void _setupSocketConnection() {
+    socket = io.io('http://10.0.2.2:5003', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': true,
+    });
+
+    socket.onConnect((_) => print('Connected to WebSocket'));
+    socket.on('elephant_locations', (data) => _updateElephantMarkers(data));
+    socket.on('elephant_alert', (data) {
+      Vibration.vibrate(duration: 1000);
+      _showAlert("Elephant Alert!", "Elephant detected within 500 meters!");
+    });
+    socket.onDisconnect((_) => print('Disconnected from WebSocket'));
+  }
+
+  Future<void> _fetchNearbyElephants() async {
+    if (_currentLocation == null) return;
+
+    try {
+      final response = await http.get(Uri.parse(
+          'http://10.0.2.2:5003/elephants/nearby?latitude=${_currentLocation!.latitude}&longitude=${_currentLocation!.longitude}'));
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        _updateElephantMarkers(data);
+      } else {
+        print("Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Network error: $e");
+    }
+  }
+
+  // Update Elephant Markers
+  void _updateElephantMarkers(dynamic data) {
+    setState(() {
+      // Remove existing elephant markers
+      markers.removeWhere((marker) => marker.markerId.value.startsWith("elephant"));
+
+      // Add new elephant markers
+      List<Marker> elephantMarkers = [];
+      for (var elephant in data) {
+        elephantMarkers.add(Marker(
+          markerId: MarkerId("elephant_${elephant['id']}"),
+          position: LatLng(elephant['latitude'], elephant['longitude']),
+          infoWindow: InfoWindow(title: "Elephant Location"),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        ));
+      }
+
+      _markers.addAll(elephantMarkers);
+    });
+  }
+
+  // Determine Current Location
+  Future<void> _determineCurrentLocation() async {
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    setState(() {
+      _currentLocation = LatLng(position.latitude, position.longitude);
+      _updateCurrentLocationMarker();
+      _animateCameraToPosition(_currentLocation!);
+    });
+    _fetchNearbyElephants();  // Fetch elephant data immediately after location is determined
+  }
+
+  // Check Location Permissions
+  Future<void> _checkLocationPermissions() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        _showAlert("Permission Denied", "Location access is required for tracking.");
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      _showAlert("Permission Denied", "Enable location access in device settings.");
+      return;
+    }
+    _determineCurrentLocation();
+  }
+
+  // Start Location Tracking
+  void _startLocationTracking() {
+    _positionStream?.cancel();
+    _positionStream = Geolocator.getPositionStream(
+      locationSettings: LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5,
+      ),
+    ).listen((Position position) {
+      setState(() {
+        _currentLocation = LatLng(position.latitude, position.longitude);
+        _updateCurrentLocationMarker();
+        if (_isJourneyStarted && _destination != null) {
+          _getRoutePoints();
+        }
+      });
+    });
+  }
+
+  // Update Current Location Marker
+  void _updateCurrentLocationMarker() {
+    if (_currentLocation != null) {
+      _markers.removeWhere((marker) => marker.markerId.value == "current_location");  // Clear old marker
+      _markers.add(
+        Marker(
+          markerId: MarkerId("current_location"),
+          position: _currentLocation!,
+          infoWindow: InfoWindow(title: "Your Location"),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        ),
+      );
+    }
+  }
+
+  // Animate Camera to Position
+  void _animateCameraToPosition(LatLng position) {
+    if (mapController != null) {
+      mapController.animateCamera(
+        CameraUpdate.newLatLngZoom(position, 15),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: LatLng(7.8731, 80.7718), // Default to Sri Lanka
+              zoom: 10,
+            ),
+            markers: _markers,
+            polylines: _routes,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: true,
+          ),
+          _buildSearchBar(),
+          _buildJourneyButton(),
+        ],
+      ),
+    );
+  }
+}
