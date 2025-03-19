@@ -46,7 +46,7 @@ export class NotificationService {
     
     console.log(`Retrieving FCM token for userId: ${userId}`);
 
-    //try {
+    try {
         // Fetch token from the Supabase users table (make sure the table has fcm_token column)
         const { data, error } = await supabase
             .from('userInfo')  // Make sure 'userInfo' is your table name
@@ -64,10 +64,10 @@ export class NotificationService {
 
         console.log('Retrieved FCM token:', data.fcm_token);
         return data.fcm_token;  // Return the token
-    // } catch (err) {
-    //     console.error('Error in getUserFCMToken:', err);
-    //     return null;  // Return null in case of an error
-    // }
+     } catch (err) {
+        console.error('Error in getUserFCMToken:', err);
+         return null;  // Return null in case of an error
+     }
 
 }
 
