@@ -19,17 +19,7 @@ class _MessageScreenState extends State<MessageScreen> {
     // Retrieve message passed through navigation
     final RemoteMessage? message = ModalRoute.of(context)?.settings.arguments as RemoteMessage?;
 
-    if (message != null) {
-      setState(() {
-        notifications.add(
-          NotificationItem(
-            title: message.notification?.title ?? "Unknown Alert",
-            description: message.notification?.body ?? "No Description",
-            timestamp: DateTime.now(),
-          ),
-        );
-      });
-    }
+    if (message != null) 
   }
 
   @override
