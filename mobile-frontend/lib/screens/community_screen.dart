@@ -150,7 +150,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
     });
   }
 
-  /// Send new marker to backend
+
  Future<void> _sendMarkerToBackend(LatLng position) async {
  try {
    final response = await http.post(
