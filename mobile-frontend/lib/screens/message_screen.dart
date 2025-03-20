@@ -33,7 +33,19 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   @override
- 
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Notifications")),
+      body: notifications.isEmpty
+          ? Center(child: Text("No Notifications"))
+          : ListView.builder(
+              itemCount: notifications.length,
+              itemBuilder: (context, index) {
+                return NotificationTile(notification: notifications[index]);
+              },
+            ),
+    );
+  }
 }
 
 class NotificationItem {
