@@ -232,7 +232,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
       ),
       body: GoogleMap(
         initialCameraPosition:
-            CameraPosition(target: _cameraPosition, zoom: 15.0),
+            CameraPosition(target: _cameraPosition, zoom: 14.0),
         markers: _markers,
         myLocationEnabled: true,
         myLocationButtonEnabled: true,
