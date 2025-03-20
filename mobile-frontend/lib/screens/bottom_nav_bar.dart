@@ -16,12 +16,21 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   int _selectedIndex = 0;
 
+<<<<<<< HEAD
+  final List<Widget> _pages = [
+    LocationScreen(),
+    MessageScreen(),
+    MyApp(),
+    SettingsScreen(),
+  ];
+=======
   List<Widget> get _pages => [
          LocationScreen(),
          MessageScreen(),
          CommunityScreen(),
          SettingsScreen(),
       ];
+>>>>>>> main
 
   void _onItemTapped(int index) {
     setState(() {
