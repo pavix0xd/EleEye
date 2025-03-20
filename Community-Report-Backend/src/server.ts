@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 // Routes
 app.use("/api", reportRoutes);
 
-// Start server
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
