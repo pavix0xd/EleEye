@@ -26,7 +26,6 @@ void registerPlugins([final Registrar? pluginRegistrar]) {
   AppLinksPluginWeb.registerWith(registrar);
   DeviceInfoPlusWebPlugin.registerWith(registrar);
   FirebaseCoreWeb.registerWith(registrar);
-
   FirebaseMessagingWeb.registerWith(registrar);
   FluttertoastWebPlugin.registerWith(registrar);
   GeolocatorPlugin.registerWith(registrar);
