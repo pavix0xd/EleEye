@@ -123,7 +123,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
           CameraPosition(target: userLatLng, zoom: 15.0),
         ),
       );
-    } 
+    } catch (e) {
+      print("Error getting user location: $e");
+    }
+  }
+
   /// Track user's real-time movement and update the camera
   void _trackUserLocation() {
     Geolocator.getPositionStream(
