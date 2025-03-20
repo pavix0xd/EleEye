@@ -218,7 +218,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "See a Big guy? Tap where you saw it",
+          "See a elephant? Tap where you saw it",
           style: TextStyle(fontSize: 20),
         ),
         actions: [
