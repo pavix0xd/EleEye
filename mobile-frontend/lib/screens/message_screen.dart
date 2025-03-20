@@ -48,6 +48,13 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 }
 
+class NotificationItem {
+  final String title;
+  final String description;
+  final DateTime timestamp;
+
+  NotificationItem({required this.title, required this.description, required this.timestamp});
+}
 
 class NotificationTile extends StatelessWidget {
   final NotificationItem notification;
