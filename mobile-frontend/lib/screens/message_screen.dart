@@ -62,12 +62,5 @@ class NotificationTile extends StatelessWidget {
   const NotificationTile({required this.notification});
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        title: Text(notification.title, style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text("${timeago.format(notification.timestamp)}\n${notification.description}"),
-      ),
-    );
-  }
+ 
 }
