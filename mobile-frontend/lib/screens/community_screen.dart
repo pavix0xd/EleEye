@@ -249,5 +249,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
   }
 
   /// Adds a marker when the user taps on the map and sends to backend
-  
+  void _addMarker(LatLng position) {
+    _sendMarkerToBackend(position);
+  }
 }
