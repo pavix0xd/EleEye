@@ -1,22 +1,30 @@
+import 'package:eleeye/api/firebase_api.dart';
 import 'package:eleeye/screens/login_screen.dart';
+import 'package:eleeye/screens/message_screen.dart';
+import 'package:eleeye/screens/splash_screen.dart';
+import 'package:eleeye/screens/settings_screen.dart';
+import 'package:eleeye/screens/bottom_nav_bar.dart';
+import 'package:eleeye/themes/theme_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'screens/splash_screen.dart';
-import 'screens/settings_screen.dart';
-import 'screens/bottom_nav_bar.dart';
-import 'firebase_options.dart';
-import 'themes/theme_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'firebase_options.dart';
+
+// Global navigator key for handling navigation from Firebase notifications
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   try {
-    await dotenv.load();
+    // Initialize Firebase
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    debugPrint("Firebase initialized successfully.");
 
+    // Load environment variables
+    await dotenv.load();
     final String? supabaseUrl = dotenv.env['SUPABASE_URL'];
     final String? supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
 
@@ -24,12 +32,15 @@ Future<void> main() async {
       throw Exception("Missing SUPABASE_URL or SUPABASE_ANON_KEY in .env file.");
     }
 
-    await Supabase.initialize(
-      url: supabaseUrl,
-      anonKey: supabaseAnonKey,
-    );
+    // Initialize Supabase
+    await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+    debugPrint("Supabase initialized successfully.");
+
+    // Initialize Firebase notifications
+    await FirebaseApi().initNotifications();
+    debugPrint("Firebase Cloud Messaging (FCM) initialized.");
   } catch (e) {
-    debugPrint("Error initializing Supabase: $e");
+    debugPrint("Error during initialization: $e");
     return;
   }
 
@@ -49,11 +60,12 @@ class EleEYEApp extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final session = Supabase.instance.client.auth.currentSession;
 
-    debugPrint("Building UI with theme: ${themeProvider.isDarkMode ? 'Dark' : 'Light'}");
+    debugPrint("🎨 Building UI with theme: ${themeProvider.isDarkMode ? 'Dark' : 'Light'}");
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'EleEYE App',
+      navigatorKey: navigatorKey, // Set navigatorKey for Firebase notifications
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
@@ -62,6 +74,7 @@ class EleEYEApp extends StatelessWidget {
         '/settings': (context) => SettingsScreen(),
         '/bottomNavBar': (context) => BottomNavBar(),
         '/login': (context) => const LoginScreen(),
+        '/message_screen': (context) => const MessageScreen(),
       },
     );
   }

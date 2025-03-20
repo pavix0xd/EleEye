@@ -1,276 +1,73 @@
-<<<<<<< HEAD
-
-
-
-
-import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class MessageScreen extends StatefulWidget {
-  const MessageScreen({Key? key}) : super(key: key);
+  const MessageScreen({super.key});
 
   @override
-  _MapPageState createState() => _MapPageState();
+  _MessageScreenState createState() => _MessageScreenState();
 }
 
-class _MapPageState extends State<MessageScreen> {
-  static const LatLng _center = LatLng(7.9333296, 81.0);
-
-  LatLng? _currentLocation;
-  LatLng? _markedLocation;
-  List<LatLng> _routePoints = [];
-  LatLng _cameraPosition = _center;
-
-  final Location _location = Location();
-  GoogleMapController? _mapController;
-  Timer? _timer;
-  final Random _random = Random();
-  final String _googleApiKey = "AIzaSyAELGA7uZB-5iyxP7n-_K8D2JuP5xoZonY";
+class _MessageScreenState extends State<MessageScreen> {
+  List<NotificationItem> notifications = [];
 
   @override
-  void initState() {
-    super.initState();
-    _currentLocation = _center;
-    _startLocationUpdates();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Retrieve message passed through navigation
+    final RemoteMessage? message = ModalRoute.of(context)?.settings.arguments as RemoteMessage?;
+
+    if (message != null) {
+      setState(() {
+        notifications.add(
+          NotificationItem(
+            title: message.notification?.title ?? "Unknown Alert",
+            description: message.notification?.body ?? "No Description",
+            timestamp: DateTime.now(),
+          ),
+        );
+      });
+    }
   }
 
-=======
-import 'dart:async';
-import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-class MessageScreen extends StatefulWidget {
-  const MessageScreen({Key? key}) : super(key: key);
-
-  @override
-  _MapPageState createState() => _MapPageState();
-}
-
-class _MapPageState extends State<MessageScreen> {
-  static const LatLng _center = LatLng(7.9333296, 81.0);
-
-  LatLng? _currentLocation;
-  LatLng? _markedLocation;
-  List<LatLng> _routePoints = [];
-  LatLng _cameraPosition = _center;
-
-  final Location _location = Location();
-  GoogleMapController? _mapController;
-  Timer? _timer;
-  final Random _random = Random();
-  final String _googleApiKey = "AIzaSyAELGA7uZB-5iyxP7n-_K8D2JuP5xoZonY";
-
-  @override
-  void initState() {
-    super.initState();
-    _currentLocation = _center;
-    _startLocationUpdates();
-  }
-
->>>>>>> main
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
-<<<<<<< HEAD
-        initialCameraPosition: CameraPosition(target: _cameraPosition, zoom: 16.0),
-=======
-        initialCameraPosition: CameraPosition(target: _cameraPosition, zoom: 15.0),
->>>>>>> main
-        markers: {
-          if (_currentLocation != null)
-            Marker(
-              markerId: MarkerId("currentLocation"),
-              position: _currentLocation!,
-              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+      appBar: AppBar(title: Text("Notifications")),
+      body: notifications.isEmpty
+          ? Center(child: Text("No Notifications"))
+          : ListView.builder(
+              itemCount: notifications.length,
+              itemBuilder: (context, index) {
+                return NotificationTile(notification: notifications[index]);
+              },
             ),
-          if (_markedLocation != null)
-            Marker(
-              markerId: MarkerId("markedLocation"),
-              position: _markedLocation!,
-              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-            ),
-        },
-        polylines: {
-          if (_routePoints.isNotEmpty)
-            Polyline(
-              polylineId: PolylineId("route"),
-<<<<<<< HEAD
-              color: const Color.fromARGB(255, 68, 123, 168),
-=======
-              color: const Color.fromARGB(255, 20, 148, 254),
->>>>>>> main
-              width: 5,
-              points: _routePoints,
-            ),
-        },
-        onMapCreated: (GoogleMapController controller) {
-          _mapController = controller;
-        },
-        onCameraMove: (CameraPosition position) {
-          setState(() {
-            _cameraPosition = position.target;
-          });
-        },
-        onTap: (LatLng latLng) {
-          _setMarkedLocation(latLng);
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.my_location),
-        onPressed: _moveToUserLocation,
-      ),
     );
   }
+}
 
-<<<<<<< HEAD
-  
-=======
-  /// Updates the user's real-time location
->>>>>>> main
-  void _startLocationUpdates() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
+class NotificationItem {
+  final String title;
+  final String description;
+  final DateTime timestamp;
 
-      double latOffset = (_random.nextDouble() * 0.002 - 0.001);
-      double lonOffset = (_random.nextDouble() * 0.002 - 0.001);
-      LatLng newLocation = LatLng(
-        _currentLocation!.latitude + latOffset,
-        _currentLocation!.longitude + lonOffset,
-      );
+  NotificationItem({required this.title, required this.description, required this.timestamp});
+}
 
-      _moveGraduallyTo(newLocation);
-    });
-  }
+class NotificationTile extends StatelessWidget {
+  final NotificationItem notification;
 
-<<<<<<< HEAD
-  
-=======
-  /// Moves smoothly from _currentLocation to target
->>>>>>> main
-  void _moveGraduallyTo(LatLng target) {
-    const int steps = 20;
-    const Duration stepDuration = Duration(milliseconds: 200);
-    double latStep = (target.latitude - _currentLocation!.latitude) / steps;
-    double lonStep = (target.longitude - _currentLocation!.longitude) / steps;
-
-    int stepCount = 0;
-    Timer.periodic(stepDuration, (Timer t) {
-      if (stepCount >= steps || !mounted) {
-        t.cancel();
-        return;
-      }
-
-      setState(() {
-        _currentLocation = LatLng(
-          _currentLocation!.latitude + latStep,
-          _currentLocation!.longitude + lonStep,
-        );
-      });
-
-      _mapController?.animateCamera(CameraUpdate.newLatLng(_currentLocation!));
-
-      stepCount++;
-
-<<<<<<< HEAD
-      
-=======
-      // Update the route dynamically if a marker is set
->>>>>>> main
-      if (_markedLocation != null) {
-        _fetchRoute();
-      }
-    });
-  }
-
-<<<<<<< HEAD
- 
-=======
-  /// User taps on the map to set a destination marker
->>>>>>> main
-  void _setMarkedLocation(LatLng location) {
-    setState(() {
-      _markedLocation = location;
-    });
-
-<<<<<<< HEAD
-   
-    _fetchRoute();
-  }
-
-  
-=======
-    // Fetch road-following route
-    _fetchRoute();
-  }
-
-  /// Fetches road-following route from Google Directions API
->>>>>>> main
-  Future<void> _fetchRoute() async {
-    if (_currentLocation == null || _markedLocation == null) return;
-
-    final String url =
-        "https://maps.googleapis.com/maps/api/directions/json?"
-        "origin=${_currentLocation!.latitude},${_currentLocation!.longitude}"
-        "&destination=${_markedLocation!.latitude},${_markedLocation!.longitude}"
-<<<<<<< HEAD
-        "&mode=driving" 
-=======
-        "&mode=driving" // Change to driving, biking, or walking
->>>>>>> main
-        "&key=$_googleApiKey";
-
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final List<LatLng> newRoute = [];
-
-      if (data['routes'].isNotEmpty) {
-        final route = data['routes'][0]['legs'][0]['steps'];
-
-        for (var step in route) {
-          final endLocation = step['end_location'];
-          newRoute.add(LatLng(endLocation['lat'], endLocation['lng']));
-        }
-
-        setState(() {
-          _routePoints = newRoute;
-        });
-      }
-    }
-  }
-
-<<<<<<< HEAD
-  
-=======
-  /// Moves the camera to the user's current location
->>>>>>> main
-  void _moveToUserLocation() {
-    if (_currentLocation != null && _mapController != null) {
-      _mapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: _currentLocation!, zoom: 15),
-        ),
-      );
-    }
-  }
+  const NotificationTile({required this.notification});
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        title: Text(notification.title, style: TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text("${timeago.format(notification.timestamp)}\n${notification.description}"),
+      ),
+    );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
@@ -79,7 +78,7 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   void _setupSocketConnection() {
-    socket = io.io('http://10.0.2.2:5003', <String, dynamic>{
+    socket = io.io('http://your-backend-url.com', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
     });
@@ -87,13 +86,6 @@ class _LocationScreenState extends State<LocationScreen> {
     socket.onConnect((_) => print('Connected to WebSocket'));
     socket.on('elephant_locations', (data) => _updateElephantMarkers(data));
     socket.onDisconnect((_) => print('Disconnected from WebSocket'));
-
-    socket.onConnect((_) {
-  print('Connected to WebSocket');
-});
-socket.onDisconnect((_) {
-  print('Disconnected from WebSocket');
-});
   }
 
   Future<void> _fetchNearbyElephants() async {
@@ -101,7 +93,7 @@ socket.onDisconnect((_) {
 
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2:5003/elephants/nearby?latitude=${_currentLocation!.latitude}&longitude=${_currentLocation!.longitude}'));
+          'http://your-backend-url.com/elephants/nearby?latitude=${_currentLocation!.latitude}&longitude=${_currentLocation!.longitude}'));
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -173,7 +165,7 @@ socket.onDisconnect((_) {
           marker.position.longitude,
         ) / 1000;
 
-        if (distance < 0.6) {
+        if (distance < 0.5) {
           _showAlert("Warning!", "Elephant detected ${distance.toStringAsFixed(2)} km away!");
 
           Vibration.vibrate(duration: 500);
@@ -201,19 +193,15 @@ socket.onDisconnect((_) {
       },
     );
   }
-=======
-
->>>>>>> main
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-<<<<<<< HEAD
       body: Stack(
         children: [
           GoogleMap(
             onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(target: LatLng(7.8731, 80.7718), zoom: 8.8),
+            initialCameraPosition: CameraPosition(target: LatLng(7.8731, 80.7718), zoom: 7.8),
             markers: _markers,
             polylines: _routes,
           ),
@@ -224,7 +212,7 @@ socket.onDisconnect((_) {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 208, 198, 198),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(color: Colors.black26, blurRadius: 4),
@@ -237,7 +225,7 @@ socket.onDisconnect((_) {
                   hintText: "Enter destination",
                   border: InputBorder.none,
                   prefixIcon: Icon(Icons.location_on, color: Colors.red),
-                  contentPadding: EdgeInsets.symmetric(vertical: 16), 
+                  contentPadding: EdgeInsets.symmetric(vertical: 15), 
                 ),
               ),
             ),
@@ -268,10 +256,6 @@ socket.onDisconnect((_) {
           ),
         ],
       ),
-=======
-      appBar: AppBar(title: Text("Location")),
-      
->>>>>>> main
     );
   }
 }

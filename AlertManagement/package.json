@@ -1,0 +1,20 @@
+{
+  "name": "alertmanagement",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^4.9.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node src/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "firebase-admin": "^13.2.0"
+  }
+}
