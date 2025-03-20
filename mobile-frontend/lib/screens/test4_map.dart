@@ -310,8 +310,11 @@ class _LocationScreenState extends State<LocationScreen> {
       return false;
     }
   }
-   // Update camera to show both current location and destination
-  e bounds with padding
+  // Update camera to show both current location and destination
+  void _updateCameraToShowRoute() {
+    if (_currentLocation == null || _destination == null) return;
+
+    // Create bounds with padding
     LatLngBounds bounds = LatLngBounds(
       southwest: LatLng(
         min(_currentLocation!.latitude, _destination!.latitude) - 0.05,
@@ -323,10 +326,7 @@ class _LocationScreenState extends State<LocationScreen> {
       ),
     );
 
-    // Make sure the cvoid _updateCameraToShowRoute() {
-    //     if (_currentLocation == null || _destination == null) return;
-    // 
-    //     // Creatontroller is initialized
+    // Make sure the controller is initialized
     if (mapController != null) {
       mapController.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
     }

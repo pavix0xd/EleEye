@@ -10,14 +10,7 @@
 #include <file_selector_windows/file_selector_windows.h>
 #include <firebase_core/firebase_core_plugin_c_api.h>
 #include <geolocator_windows/geolocator_windows.h>
-<<<<<<< HEAD
-<<<<<<< HEAD
 #include <url_launcher_windows/url_launcher_windows.h>
-=======
->>>>>>> a1fb23ae (flutter plugins)
-=======
-#include <url_launcher_windows/url_launcher_windows.h>
->>>>>>> 1845605c (fix errors)
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   AppLinksPluginCApiRegisterWithRegistrar(
@@ -28,14 +21,6 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("FirebaseCorePluginCApi"));
   GeolocatorWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("GeolocatorWindows"));
-<<<<<<< HEAD
-<<<<<<< HEAD
   UrlLauncherWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("UrlLauncherWindows"));
-=======
->>>>>>> a1fb23ae (flutter plugins)
-=======
-  UrlLauncherWindowsRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("UrlLauncherWindows"));
->>>>>>> 1845605c (fix errors)
 }
