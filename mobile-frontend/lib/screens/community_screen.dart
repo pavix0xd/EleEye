@@ -109,21 +109,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
       return;
     }
 
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      LatLng userLatLng = LatLng(position.latitude, position.longitude);
-
-      setState(() {
-        _cameraPosition = userLatLng;
-      });
-
-      _mapController?.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: userLatLng, zoom: 15.0),
-        ),
-      );
-    } catch (e) {
+    catch (e) {
       print("Error getting user location: $e");
     }
   }
