@@ -152,7 +152,15 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
 
  Future<void> _sendMarkerToBackend(LatLng position) async {
- 
+ try {
+   final response = await http.post(
+     Uri.parse(_backendUrl),
+     headers: {"Content-Type": "application/json"},
+     body: json.encode({
+       "latitude": position.latitude,
+       "longitude": position.longitude,
+     }),
+   );
  
    if (response.statusCode == 201) {
      final Map<String, dynamic> responseData = json.decode(response.body);
