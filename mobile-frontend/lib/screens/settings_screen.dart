@@ -158,7 +158,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final authService = AuthScreen();
-    final currentEmail = authService.getCurrentUserEmail() ?? "Unknown";
+    final currentEmail = authService.getCurrentUserEmail();
 
     return Scaffold(
       appBar: AppBar(title: const Text("Settings")),

@@ -60,7 +60,7 @@ class _LocationScreenState extends State<LocationScreen> {
 
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2:5002/api/cities/search?query=${Uri.encodeComponent(query)}'));
+          'http://34.28.6.57:5002/api/cities/search?query=${Uri.encodeComponent(query)}'));
 
       if (response.statusCode == 200) {
         List<dynamic> results = jsonDecode(response.body);
@@ -243,7 +243,7 @@ class _LocationScreenState extends State<LocationScreen> {
 
   // Socket Connection for Elephant Location Updates
   void _setupSocketConnection() {
-    socket = io.io('http://10.0.2.2:5003', <String, dynamic>{
+    socket = io.io('http://34.28.6.57:5003', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
     });

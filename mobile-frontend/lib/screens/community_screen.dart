@@ -17,99 +17,103 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen> {
   LatLng _cameraPosition = const LatLng(6.8868, 79.9187);
-
   final Set<Marker> _markers = {};
-  List<LatLng> _routePoints = [];
   BitmapDescriptor? _customMarker;
   GoogleMapController? _mapController;
-  final String _backendUrl = "http://10.0.2.2:5001/api/reports"; // Backend endpoint
+  final String _backendUrl = "http://34.28.6.57:5001/api/reports"; // Backend URL
 
   @override
   void initState() {
     super.initState();
-    _loadCustomMarker();
-    _fetchMarkersFromBackend();
-    _getUserLocation(); // Fetch initial user location
-    _trackUserLocation(); // Start tracking user movement
+    _initialize();
+  }
+
+  /// Initialize loading marker and fetching data
+  Future<void> _initialize() async {
+    await _loadCustomMarker();
+    await _fetchMarkersFromBackend();
+    _getUserLocation();
+    _trackUserLocation();
   }
 
   /// Load custom marker image
   Future<void> _loadCustomMarker() async {
-    final ByteData byteData = await rootBundle.load('assets/ele_marker.png');
-    final Uint8List imageData = byteData.buffer.asUint8List();
+    try {
+      final ByteData byteData = await rootBundle.load('assets/ele_marker.png');
+      final Uint8List imageData = byteData.buffer.asUint8List();
 
-    final ui.Codec codec =
-        await ui.instantiateImageCodec(imageData, targetWidth: 100);
-    final ui.FrameInfo frameInfo = await codec.getNextFrame();
-    final ByteData? byteDataConverted =
-        await frameInfo.image.toByteData(format: ui.ImageByteFormat.png);
+      final ui.Codec codec =
+          await ui.instantiateImageCodec(imageData, targetWidth: 100);
+      final ui.FrameInfo frameInfo = await codec.getNextFrame();
+      final ByteData? byteDataConverted =
+          await frameInfo.image.toByteData(format: ui.ImageByteFormat.png);
 
-    if (byteDataConverted != null) {
-      setState(() {
-        _customMarker =
-            BitmapDescriptor.fromBytes(byteDataConverted.buffer.asUint8List());
-      });
+      if (byteDataConverted != null) {
+        setState(() {
+          _customMarker =
+              BitmapDescriptor.fromBytes(byteDataConverted.buffer.asUint8List());
+        });
+      }
+    } catch (e) {
+      print("Error loading custom marker: $e");
     }
   }
 
   /// Fetch markers from the backend
   Future<void> _fetchMarkersFromBackend() async {
- if (_customMarker == null) {
-   await _loadCustomMarker(); // Ensure custom marker is loaded first
- }
- 
- try {
-   final response = await http.get(Uri.parse(_backendUrl));
- 
-   if (response.statusCode == 200) {
-     final Map<String, dynamic> decoded = json.decode(response.body);
-     final List<dynamic> data = decoded["reports"];
- 
-     setState(() {
-       _markers.clear();
-       for (var marker in data) {
-         _markers.add(Marker(
-           markerId: MarkerId(marker['id'].toString()),
-           position: LatLng(marker['latitude'], marker['longitude']),
-           icon: _customMarker ?? BitmapDescriptor.defaultMarker, // Always use custom marker
-           onTap: () => _removeMarker(marker['id'].toString()),
-         ));
-       }
-     });
-   } else {
-     print("Failed to load markers");
-   }
- } catch (e) {
-   print("Error fetching markers: $e");
- }
-}
+    try {
+      final response = await http.get(Uri.parse(_backendUrl));
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded is Map<String, dynamic> && decoded.containsKey("reports")) {
+          final List<dynamic> data = decoded["reports"];
+
+          setState(() {
+            _markers.clear();
+            for (var marker in data) {
+              _markers.add(Marker(
+                markerId: MarkerId(marker['id'].toString()),
+                position: LatLng(marker['latitude'], marker['longitude']),
+                icon: _customMarker ?? BitmapDescriptor.defaultMarker,
+                onTap: () => _removeMarker(marker['id'].toString()),
+              ));
+            }
+          });
+        } else {
+          print("Unexpected response format: $decoded");
+        }
+      } else {
+        print("Failed to load markers: ${response.statusCode} - ${response.body}");
+      }
+    } catch (e) {
+      print("Error fetching markers: $e");
+    }
+  }
 
   /// Fetch user's initial location and update the camera
   Future<void> _getUserLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      print("Location services are disabled.");
-      return;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        print("Location permissions are denied.");
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        print("Location services are disabled.");
         return;
       }
-    }
 
-    if (permission == LocationPermission.deniedForever) {
-      print("Location permissions are permanently denied.");
-      return;
-    }
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          print("Location permissions are denied.");
+          return;
+        }
+      }
 
-    try {
+      if (permission == LocationPermission.deniedForever) {
+        print("Location permissions are permanently denied.");
+        return;
+      }
+
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       LatLng userLatLng = LatLng(position.latitude, position.longitude);
@@ -133,7 +137,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // Update when user moves 10 meters
+        distanceFilter: 10,
       ),
     ).listen((Position position) {
       LatLng newLocation = LatLng(position.latitude, position.longitude);
@@ -151,52 +155,51 @@ class _CommunityScreenState extends State<CommunityScreen> {
   }
 
   /// Send new marker to backend
- Future<void> _sendMarkerToBackend(LatLng position) async {
- try {
-   final response = await http.post(
-     Uri.parse(_backendUrl),
-     headers: {"Content-Type": "application/json"},
-     body: json.encode({
-       "latitude": position.latitude,
-       "longitude": position.longitude,
-     }),
-   );
- 
-   if (response.statusCode == 201) {
-     final Map<String, dynamic> responseData = json.decode(response.body);
- 
-     if (responseData.containsKey('report') && responseData['report'].isNotEmpty) {
-       final newMarkerId = responseData['report'][0]['id'];
- 
-       setState(() {
-         _markers.add(Marker(
-           markerId: MarkerId(newMarkerId.toString()),
-           position: position,
-           icon: _customMarker ?? BitmapDescriptor.defaultMarker,
-           onTap: () => _removeMarker(newMarkerId.toString()),
-         ));
-       });
- 
-       print("Marker saved successfully with ID: $newMarkerId");
-       _fetchMarkersFromBackend(); // Refresh markers after adding
-     } else {
-       print("Unexpected response format: $responseData");
-     }
-   } else {
-     print("Failed to save marker");
-   }
- } catch (e) {
-   print("Error sending marker: $e");
- }
-}
+  Future<void> _sendMarkerToBackend(LatLng position) async {
+    try {
+      final response = await http.post(
+        Uri.parse(_backendUrl),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({
+          "latitude": position.latitude,
+          "longitude": position.longitude,
+        }),
+      );
 
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+
+        if (responseData.containsKey('report') &&
+            responseData['report'] is List &&
+            responseData['report'].isNotEmpty) {
+          final newMarkerId = responseData['report'][0]['id'];
+
+          setState(() {
+            _markers.add(Marker(
+              markerId: MarkerId(newMarkerId.toString()),
+              position: position,
+              icon: _customMarker ?? BitmapDescriptor.defaultMarker,
+              onTap: () => _removeMarker(newMarkerId.toString()),
+            ));
+          });
+
+          print("Marker saved successfully with ID: $newMarkerId");
+          _fetchMarkersFromBackend();
+        } else {
+          print("Unexpected response format: $responseData");
+        }
+      } else {
+        print("Failed to save marker: ${response.statusCode} - ${response.body}");
+      }
+    } catch (e) {
+      print("Error sending marker: $e");
+    }
+  }
 
   /// Removes a marker when tapped
   void _removeMarker(String markerId) async {
     try {
-      final response = await http.delete(
-        Uri.parse("$_backendUrl/$markerId"),
-      );
+      final response = await http.delete(Uri.parse("$_backendUrl/$markerId"));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -204,9 +207,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
         });
 
         print("Marker deleted successfully");
-        _fetchMarkersFromBackend(); // Refresh markers after deletion
+        _fetchMarkersFromBackend();
       } else {
-        print("Failed to delete marker");
+        print("Failed to delete marker: ${response.statusCode} - ${response.body}");
       }
     } catch (e) {
       print("Error deleting marker: $e");
@@ -224,9 +227,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Image.asset(
-              'assets/ele_marker.png',
-            ),
+            child: Image.asset('assets/ele_marker.png'),
           ),
         ],
       ),
@@ -243,12 +244,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.refresh),
-        onPressed: _fetchMarkersFromBackend, // Reload markers from backend
+        onPressed: _fetchMarkersFromBackend,
       ),
     );
   }
 
-  /// Adds a marker when the user taps on the map and sends to backend
+  /// Adds a marker when the user taps on the map and sends it to the backend
   void _addMarker(LatLng position) {
     _sendMarkerToBackend(position);
   }
