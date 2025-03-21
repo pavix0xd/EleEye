@@ -4,8 +4,11 @@ import cityRoutes from "./routes/cityRoutes";
 
 const app = express();
 app.use(cors());
-app.use(express.json());
 
-app.use("/api", cityRoutes);
+
+// Middleware to parse JSON requests
+app.use(express.json()); 
+
+app.use("/api", cityRoutes); // Register city-related API routes
 
 export default app;

@@ -221,7 +221,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "See a Big guy? Tap where you saw it",
+          "See a elephant? Tap where you saw it",
           style: TextStyle(fontSize: 20),
         ),
         actions: [
@@ -233,7 +233,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
       ),
       body: GoogleMap(
         initialCameraPosition:
-            CameraPosition(target: _cameraPosition, zoom: 15.0),
+            CameraPosition(target: _cameraPosition, zoom: 14.0),
         markers: _markers,
         myLocationEnabled: true,
         myLocationButtonEnabled: true,

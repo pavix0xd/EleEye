@@ -21,14 +21,18 @@ const io = new Server(server, {
   cors: { origin: '*' }
 });
 
+// Middleware setup
 app.use(cors());
 app.use(express.json());
+
+// Register API routes
 app.use('/elephants', elephantRoutes);
 
 // WebSocket connection
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
+  // Listen for user location updates
   socket.on('user_location', async ({ latitude, longitude }) => {
     console.log(`User at: ${latitude}, ${longitude}`);
     const nearbyElephants = await getNearbyElephants(latitude, longitude);
@@ -37,7 +41,7 @@ io.on('connection', (socket) => {
 
     // Check if an elephant is within 500m
     const closeElephants = nearbyElephants.filter((e: Elephant) => 
-      calculateDistance(latitude, longitude, e.latitude, e.longitude) <= 0.5
+      calculateDistance(latitude, longitude, e.latitude, e.longitude) <= 0.5    // Check if any elephant is within 500 meters of the user
     );
     
     if (closeElephants.length > 0) {
