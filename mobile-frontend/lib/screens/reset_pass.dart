@@ -12,13 +12,12 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _passwordController = TextEditingController();
-  final SupabaseClient supabase = Supabase.instance.client;
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   String? _errorMessage;
 
   Future<void> updatePassword() async {
-    HapticFeedback.lightImpact();
+    final supabase = Supabase.instance.client;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -34,11 +33,24 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     }
 
     try {
+      // Authenticate using the reset token
+      final response = await supabase.auth.exchangeCodeForSession(widget.token);
+
+      if (response.session == null) {
+        setState(() {
+          _errorMessage = "Invalid or expired reset link.";
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Now update the password
       await supabase.auth.updateUser(UserAttributes(password: newPassword));
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password updated successfully!')),
       );
-      Navigator.pop(context);
+      Navigator.pushReplacementNamed(context, '/login');
     } on AuthException catch (e) {
       setState(() {
         _errorMessage = e.message;

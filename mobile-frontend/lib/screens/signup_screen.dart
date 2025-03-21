@@ -111,73 +111,77 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false, bool isEmail = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
-        const SizedBox(height: 8),
-        Focus(
-          child: Builder(
-            builder: (context) {
-              final isFocused = Focus.of(context).hasFocus;
-              return TextFormField(
-                controller: controller,
-                obscureText: isPassword && (label == "Password" ? !_isPasswordVisible : !_isConfirmPasswordVisible),
-                keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
-                textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'This field cannot be empty';
-                  }
-                  if (isEmail && !RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
-                    return 'Enter a valid email';
-                  }
-                  if (isPassword && value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
-                  if (label == "Confirm Password" && value != _passwordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                },
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: isFocused ? Colors.white : Colors.white.withOpacity(0.1),
-                  hintText: label,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 15),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(color: Colors.teal, width: 2),
-                  ),
-                  suffixIcon: isPassword
-                      ? IconButton(
-                          icon: Icon(
-                            label == "Password" ? (_isPasswordVisible ? Icons.visibility : Icons.visibility_off) 
-                                               : (_isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off),
-                            color: Colors.grey.shade700,
-                          ),
-                          onPressed: () => setState(() {
-                            if (label == "Password") {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            } else {
-                              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                            }
-                          }),
-                        )
-                      : null,
+Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false, bool isEmail = false}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
+      const SizedBox(height: 8),
+      Focus(
+        child: Builder(
+          builder: (context) {
+            final isFocused = Focus.of(context).hasFocus;
+            return TextFormField(
+              controller: controller,
+              obscureText: isPassword && (label == "Password" ? !_isPasswordVisible : !_isConfirmPasswordVisible),
+              keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+              textInputAction: TextInputAction.next,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'This field cannot be empty';
+                }
+                if (isEmail && !RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+                  return 'Enter a valid email';
+                }
+                if (isPassword && value.length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
+                if (label == "Confirm Password" && value != _passwordController.text) {
+                  return 'Passwords do not match';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: isFocused ? Colors.white : Colors.white.withOpacity(0.1),
+                hintText: label,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 15),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
                 ),
-              );
-            },
-          ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: Colors.teal, width: 2),
+                ),
+                suffixIcon: isPassword
+                    ? IconButton(
+                        icon: Icon(
+                          label == "Password" ? (_isPasswordVisible ? Icons.visibility : Icons.visibility_off) 
+                                             : (_isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                          color: Colors.grey.shade700,
+                        ),
+                        onPressed: () => setState(() {
+                          if (label == "Password") {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          } else {
+                            _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                          }
+                        }),
+                      )
+                    : null,
+              ),
+              style: const TextStyle(color: Colors.black),
+              cursorColor: Colors.black,
+            );
+          },
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
+
+
 
   Widget _buildSignupButton() {
     return Center(

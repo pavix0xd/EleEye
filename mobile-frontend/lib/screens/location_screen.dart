@@ -22,156 +22,139 @@ class _LocationScreenState extends State<LocationScreen> {
   final TextEditingController _destinationController = TextEditingController();
   late io.Socket socket;
   StreamSubscription<Position>? _positionStream;
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
     _setupSocketConnection();
     _checkLocationPermissions();
+    _startLocationTracking();
   }
 
   @override
   void dispose() {
     socket.dispose();
     _positionStream?.cancel();
+    _destinationController.dispose();
     super.dispose();
   }
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    if (_currentLocation != null) {
+      _animateCameraToPosition(_currentLocation!);
+    }
   }
 
-  Future<void> _checkLocationPermissions() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        _showAlert("Permission Denied", "Location access is required for tracking.");
-        return;
-      }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      _showAlert("Permission Denied", "Enable location access in device settings.");
+  Future<void> _searchDestination() async {
+    final query = _destinationController.text.trim().toLowerCase();
+    if (query.isEmpty) {
+      _showAlert("Error", "Please enter a destination");
       return;
     }
-    _determineCurrentLocation();
-  }
 
-  Future<void> _determineCurrentLocation() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      setState(() {
-        _currentLocation = LatLng(position.latitude, position.longitude);
-        _markers.add(
-          Marker(
-            markerId: MarkerId("currentLocation"),
-            position: _currentLocation!,
-            infoWindow: InfoWindow(title: "You Are Here"),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-          ),
-        );
-      });
-      _fetchNearbyElephants();
-    } catch (e) {
-      _showAlert("Error", "Failed to get location: ${e.toString()}");
-    }
-  }
-
-  void _setupSocketConnection() {
-    socket = io.io('http://your-backend-url.com', <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': true,
+    setState(() {
+      _isSearching = true;
     });
-
-    socket.onConnect((_) => print('Connected to WebSocket'));
-    socket.on('elephant_locations', (data) => _updateElephantMarkers(data));
-    socket.onDisconnect((_) => print('Disconnected from WebSocket'));
-  }
-
-  Future<void> _fetchNearbyElephants() async {
-    if (_currentLocation == null) return;
 
     try {
       final response = await http.get(Uri.parse(
-          'http://your-backend-url.com/elephants/nearby?latitude=${_currentLocation!.latitude}&longitude=${_currentLocation!.longitude}'));
+          'http://34.28.6.57:5002/api/cities/search?query=${Uri.encodeComponent(query)}'));
 
       if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-        _updateElephantMarkers(data);
+        List<dynamic> results = jsonDecode(response.body);
+        if (results.isNotEmpty) {
+          var city = results.first;
+          setState(() {
+            _destination = LatLng(city['latitude'], city['longitude']);
+            _markers.add(
+              Marker(
+                markerId: MarkerId("destination"),
+                position: _destination!,
+                infoWindow: InfoWindow(title: "Destination: ${city['name_en']}"),
+                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+              ),
+            );
+            _isJourneyStarted = false;
+          });
+        } else {
+          _showAlert("Location Not Found", "No results for '$query'. Try another city.");
+        }
       } else {
-        print("Error: ${response.statusCode}");
+        _showAlert("Error", "Failed to fetch locations.");
       }
     } catch (e) {
-      print("Network error: $e");
+      _showAlert("Network Error", "Check your connection.");
+    } finally {
+      setState(() {
+        _isSearching = false;
+      });
     }
   }
 
-  void _updateElephantMarkers(dynamic data) {
-    setState(() {
-      _markers.removeWhere((marker) => marker.markerId.value.startsWith("elephant"));
-      for (var elephant in data) {
-        _markers.add(
-          Marker(
-            markerId: MarkerId("elephant_${elephant['id']}"),
-            position: LatLng(elephant['latitude'], elephant['longitude']),
-            infoWindow: InfoWindow(title: "Elephant ${elephant['id']}"),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          ),
-        );
-      }
-    });
-  }
+  Future<void> _getRoutePoints() async {
+    if (_currentLocation == null || _destination == null) return;
 
-  void _startJourney() {
-    setState(() {
-      _isJourneyStarted = true;
-    });
+    final String apiKey = "AIzaSyAELGA7uZB-5iyxP7n-_K8D2JuP5xoZonY";
+    final String url =
+        "https://maps.googleapis.com/maps/api/directions/json?origin=${_currentLocation!.latitude},${_currentLocation!.longitude}&destination=${_destination!.latitude},${_destination!.longitude}&key=$apiKey";
 
-    Geolocator.getPositionStream(
-      locationSettings: LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 10),
-    ).listen((Position position) {
-      setState(() {
-        _currentLocation = LatLng(position.latitude, position.longitude);
-        _markers.removeWhere((marker) => marker.markerId.value == "currentLocation");
-        _markers.add(
-          Marker(
-            markerId: MarkerId("currentLocation"),
-            position: _currentLocation!,
-            infoWindow: InfoWindow(title: "You Are Here"),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-          ),
-        );
-      });
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
 
-      _fetchNearbyElephants();
-      _animateCameraToPosition(_currentLocation!);
-      _checkForElephantsNearby();
-    });
-  }
+        if (data["routes"].isNotEmpty) {
+          List<LatLng> polylineCoordinates = [];
+          var points = data["routes"][0]["overview_polyline"]["points"];
+          polylineCoordinates = _decodePolyline(points);
 
-  void _animateCameraToPosition(LatLng position) {
-    mapController.animateCamera(
-      CameraUpdate.newLatLngZoom(position, 15),
-    );
-  }
-
-  void _checkForElephantsNearby() {
-    for (var marker in _markers) {
-      if (marker.markerId.value.startsWith("elephant")) {
-        double distance = Geolocator.distanceBetween(
-          _currentLocation!.latitude,
-          _currentLocation!.longitude,
-          marker.position.latitude,
-          marker.position.longitude,
-        ) / 1000;
-
-        if (distance < 0.5) {
-          _showAlert("Warning!", "Elephant detected ${distance.toStringAsFixed(2)} km away!");
-
-          Vibration.vibrate(duration: 500);
+          setState(() {
+            _routes.clear();
+            _routes.add(Polyline(
+              polylineId: PolylineId("route"),
+              points: polylineCoordinates,
+              color: Colors.blue,
+              width: 5,
+            ));
+            _isJourneyStarted = true;
+          });
         }
       }
+    } catch (e) {
+      print("Error fetching route: $e");
     }
+  }
+
+  List<LatLng> _decodePolyline(String encoded) {
+    List<LatLng> polylineCoordinates = [];
+    int index = 0, len = encoded.length;
+    int lat = 0, lng = 0;
+
+    while (index < len) {
+      int b, shift = 0, result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lng += dlng;
+
+      polylineCoordinates.add(LatLng(lat / 1E5, lng / 1E5));
+    }
+    return polylineCoordinates;
   }
 
   void _showAlert(String title, String message) {
@@ -194,6 +177,173 @@ class _LocationScreenState extends State<LocationScreen> {
     );
   }
 
+  // New Search Bar Widget
+  Widget _buildSearchBar() {
+    return Positioned(
+      top: 40,
+      left: 20,
+      right: 20,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _destinationController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter destination city...',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.all(12),
+                  ),
+                  onSubmitted: (_) => _searchDestination(),
+                ),
+              ),
+              IconButton(
+                icon: _isSearching
+                    ? CircularProgressIndicator(strokeWidth: 2)
+                    : Icon(Icons.search),
+                onPressed: _isSearching ? null : _searchDestination,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Journey Control Button
+  Widget _buildJourneyButton() {
+    return Positioned(
+      bottom: 40,
+      right: 20,
+      child: FloatingActionButton.extended(
+        icon: Icon(_isJourneyStarted ? Icons.stop : Icons.directions),
+        label: Text(_isJourneyStarted ? 'Stop Journey' : 'Start Journey'),
+        backgroundColor: _isJourneyStarted ? Colors.red : Colors.blue,
+        onPressed: () {
+          setState(() {
+            _isJourneyStarted = !_isJourneyStarted;
+            if (!_isJourneyStarted) {
+              _routes.clear();
+              _destination = null;
+              _destinationController.clear();
+              _markers.removeWhere((m) => m.markerId.value == "destination");
+            }
+          });
+          if (_isJourneyStarted && _destination != null) {
+            _getRoutePoints();
+          }
+        },
+      ),
+    );
+  }
+
+  // Socket Connection for Elephant Location Updates
+  void _setupSocketConnection() {
+    socket = io.io('http://34.28.6.57:5003', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': true,
+    });
+
+    socket.onConnect((_) => print('Connected to WebSocket'));
+    socket.on('elephant_locations', (data) => _updateElephantMarkers(data));
+    socket.on('elephant_alert', (data) {
+      Vibration.vibrate(duration: 1000);
+      _showAlert("Elephant Alert!", "Elephant detected within 500 meters!");
+    });
+    socket.onDisconnect((_) => print('Disconnected from WebSocket'));
+  }
+
+  // Update Elephant Markers
+  void _updateElephantMarkers(dynamic data) {
+    // Assuming `data` is a list of elephant locations with lat/lng
+    List<Marker> elephantMarkers = [];
+    for (var elephant in data) {
+      elephantMarkers.add(Marker(
+        markerId: MarkerId("elephant_${elephant['id']}"),
+        position: LatLng(elephant['latitude'], elephant['longitude']),
+        infoWindow: InfoWindow(title: "Elephant Location"),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      ));
+    }
+
+    setState(() {
+      _markers.addAll(elephantMarkers);
+    });
+  }
+
+  // Determine Current Location
+  Future<void> _determineCurrentLocation() async {
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    setState(() {
+      _currentLocation = LatLng(position.latitude, position.longitude);
+      _updateCurrentLocationMarker();
+      _animateCameraToPosition(_currentLocation!);
+    });
+  }
+
+  // Check Location Permissions
+  Future<void> _checkLocationPermissions() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        _showAlert("Permission Denied", "Location access is required for tracking.");
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      _showAlert("Permission Denied", "Enable location access in device settings.");
+      return;
+    }
+    _determineCurrentLocation();
+  }
+
+  // Start Location Tracking
+  void _startLocationTracking() {
+    _positionStream?.cancel();
+    _positionStream = Geolocator.getPositionStream(
+      locationSettings: LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5,
+      ),
+    ).listen((Position position) {
+      setState(() {
+        _currentLocation = LatLng(position.latitude, position.longitude);
+        _updateCurrentLocationMarker();
+        if (_isJourneyStarted && _destination != null) {
+          _getRoutePoints();
+        }
+      });
+    });
+  }
+
+  // Update Current Location Marker
+  void _updateCurrentLocationMarker() {
+    if (_currentLocation != null) {
+      _markers.add(
+        Marker(
+          markerId: MarkerId("current_location"),
+          position: _currentLocation!,
+          infoWindow: InfoWindow(title: "Your Location"),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        ),
+      );
+    }
+  }
+
+  // Animate Camera to Position
+  void _animateCameraToPosition(LatLng position) {
+    if (mapController != null) {
+      mapController.animateCamera(
+        CameraUpdate.newLatLngZoom(position, 15),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -201,59 +351,17 @@ class _LocationScreenState extends State<LocationScreen> {
         children: [
           GoogleMap(
             onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(target: LatLng(7.8731, 80.7718), zoom: 7.8),
+            initialCameraPosition: CameraPosition(
+              target: LatLng(7.8731, 80.7718),
+              zoom: 7.8,
+            ),
             markers: _markers,
             polylines: _routes,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
           ),
-          Positioned(
-            top: 40,
-            left: 10,
-            right: 10,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(color: Colors.black26, blurRadius: 4),
-                ],
-              ),
-              child: TextField(
-                controller: _destinationController,
-                textAlignVertical: TextAlignVertical.center, 
-                decoration: InputDecoration(
-                  hintText: "Enter destination",
-                  border: InputBorder.none,
-                  prefixIcon: Icon(Icons.location_on, color: Colors.red),
-                  contentPadding: EdgeInsets.symmetric(vertical: 15), 
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start, 
-        children: [
-          FloatingActionButton(
-            heroTag: "recenter",
-            onPressed: () => _animateCameraToPosition(_currentLocation!),
-            backgroundColor: Colors.white,
-            child: Icon(Icons.my_location, color: Colors.blue),
-          ),
-          SizedBox(height: 10),
-          Align(
-            alignment: Alignment.bottomLeft, 
-            child: FloatingActionButton.extended(
-              heroTag: "startJourney",
-              onPressed: _startJourney,
-              label: Text("Start Journey", style: TextStyle(color: Colors.white)),
-              icon: Icon(Icons.directions, color: Colors.white),
-              backgroundColor: Colors.teal,
-              elevation: 6,
-            ),
-          ),
+          _buildSearchBar(),
+          _buildJourneyButton(),
         ],
       ),
     );

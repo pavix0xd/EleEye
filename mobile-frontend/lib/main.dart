@@ -1,6 +1,7 @@
 import 'package:eleeye/api/firebase_api.dart';
 import 'package:eleeye/screens/login_screen.dart';
 import 'package:eleeye/screens/message_screen.dart';
+import 'package:eleeye/screens/reset_pass.dart';
 import 'package:eleeye/screens/splash_screen.dart';
 import 'package:eleeye/screens/settings_screen.dart';
 import 'package:eleeye/screens/bottom_nav_bar.dart';
@@ -60,7 +61,7 @@ class EleEYEApp extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final session = Supabase.instance.client.auth.currentSession;
 
-    debugPrint("🎨 Building UI with theme: ${themeProvider.isDarkMode ? 'Dark' : 'Light'}");
+    final String? resetToken = ''; // Define resetToken
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -69,12 +70,14 @@ class EleEYEApp extends StatelessWidget {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: session != null ? const BottomNavBar() : const SplashScreen(),
+      initialRoute: '/',
       routes: {
+        '/': (context) => session != null ? const BottomNavBar() : const SplashScreen(),
         '/settings': (context) => SettingsScreen(),
         '/bottomNavBar': (context) => BottomNavBar(),
         '/login': (context) => const LoginScreen(),
         '/message_screen': (context) => const MessageScreen(),
+        '/reset-password': (context) => ResetPasswordScreen(token: resetToken ?? ''),
       },
     );
   }
