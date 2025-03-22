@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+class MessageScreen extends StatefulWidget {
+  const MessageScreen({super.key});
+
+  @override
+  _MessageScreenState createState() => _MessageScreenState();
+}
 
 class _MessageScreenState extends State<MessageScreen> {
   List<NotificationItem> notifications = [];
