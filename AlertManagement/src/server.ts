@@ -18,7 +18,7 @@ app.use('/api/notifications', notificationRoutes);  // Use the notification rout
 app.use('/api/checkFcm', checkFcmRoutes);  // Use the checkFcm routes under '/api/check-fcm'
 
 // Start the server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5004;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
