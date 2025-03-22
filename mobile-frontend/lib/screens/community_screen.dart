@@ -95,7 +95,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
   Future<void> _getUserLocation() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-     
+      if (!serviceEnabled) {
+        print("Location services are disabled.");
+        return;
+      }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
