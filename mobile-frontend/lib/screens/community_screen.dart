@@ -8,13 +8,6 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:geolocator/geolocator.dart';
 
-class CommunityScreen extends StatefulWidget {
-  const CommunityScreen({Key? key}) : super(key: key);
-
-  @override
-  _CommunityScreenState createState() => _CommunityScreenState();
-}
-
 class _CommunityScreenState extends State<CommunityScreen> {
   LatLng _cameraPosition = const LatLng(6.8868, 79.9187);
   final Set<Marker> _markers = {};
