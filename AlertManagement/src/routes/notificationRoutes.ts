@@ -9,16 +9,16 @@ const notificationService = new NotificationService();
 
 // Define the endpoint for sending notifications
 router.post('/send-notification', async (req: Request, res: Response) => {
-  const { userId, title, message } = req.body;
+  const { title, message,latitude,longitude } = req.body;
 
   try {
     // Validate the input
-    if (!userId || !title || !message) {
-      return res.status(400).json({ error: 'userId, title, and message are required.' });
+    if (!title || !message || !latitude || !longitude) {
+      return res.status(400).json({ error: 'title, message, latitude, and longitude are required.' });
     }
 
     // Call the notification service to send the push notification
-    const result = await notificationService.sendPushNotification(userId, title, message);
+    const result = await notificationService.sendPushNotificationToAllUsers(title, message,latitude,longitude);
 
     // Send the success response
     return res.status(200).json(result);
