@@ -48,8 +48,8 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     // Generate a notification message based on the alert
-    const title = `Object Detection Alert: ${event_type}`;
-    const message = `An object detection alert has been reported in your area with confidence level ${confidence}%. Source: ${source}.`;
+    const title = `Ele Alert: ${event_type}`;
+    const message = `An elephant has been reported in your area with confidence level ${confidence}%. Source: ${source}.`;
 
     // Send notifications to all users based on the alert's location
     await notificationService.sendPushNotificationToAllUsers(title, message, latitude.toString(), longitude.toString());
