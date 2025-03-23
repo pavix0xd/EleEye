@@ -1,55 +1,67 @@
 import express from 'express';
-import { Request, Response, Router } from 'express';
-// import express , {Request, Response} from 'express';
-import { Server } from 'socket.io';
+import { Request, Response } from 'express';
 import supabase from '../db';  // Import the Supabase client
+import { NotificationService } from '../services/notificationService'; // Import the NotificationService
 
-// Define the alertRoutes function to accept `io`
 const router = express.Router();
 
 // Interface for the alert object (for better type safety)
 interface Alert {
   event_type: string;
-  location: string;
+  location: string; // Expected to be a string containing both latitude and longitude, e.g. "0.00000 180.00000"
   confidence: number;
   source: string;
 }
 
-export function setupAlertRoutes(io: Server) {
-  // Create a new alert
-  router.post("/", async (req: Request, res: Response) => {
-    const { event_type, location, confidence, source }: Alert = req.body;
+// Create an instance of the NotificationService
+const notificationService = new NotificationService();
 
-    try {
-      // Insert the new alert into Supabase
-      const { data, error } = await supabase
-        .from("alerts")
-        .insert([{ 
-          event_type,
-          location,
-          confidence,
-          source
-        }])
-        .single();  // Get the inserted row
+// Create a new alert
+router.post("/", async (req: Request, res: Response) => {
+  const { event_type, location, confidence, source }: Alert = req.body;
 
-      // Check for Supabase errors
-      if (error) {
-        console.error("Supabase Error:", error);  // Log the Supabase error
-        throw error;  // Rethrow to be caught in the outer catch block
-      }
-
-      // Emit real-time alert (WebSockets)
-      io.emit("newAlert", data);
-
-      // Send back the inserted data
-      res.json(data);
-
-    } catch (err: any) {
-      // General error handling (catching any type of error)
-      console.error("Error creating alert:", err instanceof Error ? err.message : err);  // Log the detailed error
-      res.status(500).json({ error: "An error occurred while creating the alert" });
+  try {
+    // Split the location string into latitude and longitude
+    const locationParts = location.split(" ");
+    if (locationParts.length < 2) {
+      throw new Error("Invalid location format. Expected both latitude and longitude.");
     }
-  });
+    const latitude = parseFloat(locationParts[0]);
+    const longitude = parseFloat(locationParts[1]);
 
-  return router;
-}
+    // Insert the new alert into Supabase with latitude and longitude columns
+    const { data, error } = await supabase
+      .from("alerts")
+      .insert([{ 
+        event_type,
+        latitude,      // New column for latitude
+        longitude,     // New column for longitude
+        confidence,
+        source
+      }])
+      .single();  // Get the inserted row
+
+    // Check for Supabase errors
+    if (error) {
+      console.error("Supabase Error:", error);
+      throw error;
+    }
+
+    // Generate a notification message based on the alert
+    const title = `Object Detection Alert: ${event_type}`;
+    const message = `An object detection alert has been reported in your area with confidence level ${confidence}%. Source: ${source}.`;
+
+    // Send notifications to all users based on the alert's location
+    await notificationService.sendPushNotificationToAllUsers(title, message, latitude.toString(), longitude.toString());
+
+    // Send back the inserted data
+    res.json(data);
+
+  } catch (err: any) {
+    console.error("Error creating alert:", err instanceof Error ? err.message : err);
+    res.status(500).json({ error: "An error occurred while creating the alert" });
+  }
+});
+
+// Export the router as `alertRoutes`
+export { router as alertRoutes };

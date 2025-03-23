@@ -12,7 +12,7 @@ var io = new socket_io_1.Server(server);
 app.use(express.json()); // Middleware to parse JSON request bodies
 // Set up the route to handle POST /api/alerts
 app.use('/api/alerts', (0, alertRoutes_1.setupAlertRoutes)(io));
-var PORT = process.env.PORT || 5000; // Use port 5000 or from environment variables
+var PORT = process.env.PORT || 5004; // Use port 5000 or from environment variables
 server.listen(PORT, function () {
     console.log("Server is running on port ".concat(PORT));
 });
