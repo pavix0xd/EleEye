@@ -4,9 +4,9 @@
 
 # Ignore orphaned, unorphaned and corrupted directories, 
 # which are for the data (image) gathering process
-
 orphaned/
 unorphaned/
 corrupted/
 deepstream/
 noisy/
+nvdsinfer_custom_impl_Yolo/
