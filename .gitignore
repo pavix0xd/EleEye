@@ -29,3 +29,5 @@ node_modules/
 *.ipr
 *.iws
 /.vscode/
+
+elephant/

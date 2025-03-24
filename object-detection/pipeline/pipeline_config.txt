@@ -1,0 +1,25 @@
+[property]
+gpu-id=0
+net-scale-factor=0.003921569790691137  # Normalization (1/255)
+model-engine-file=/path/to/yolov8.trt  # Path to your TensorRT engine file
+labelfile-path=/path/to/yolov8_labels.txt  # Class labels file
+infer-dims=3;640;640  # Change based on your YOLOv8 model size
+uff-input-blob-name=input_1
+batch-size=1
+network-mode=2
+num-detected-classes=80
+interval=0
+
+# Enable tensor metadata
+output-tensor-meta=1  
+
+[class-attrs-all]
+pre-cluster-threshold=0.25  # Minimum confidence threshold
+post-cluster-threshold=0.3  # NMS threshold
+eps=0.7  # IoU threshold for NMS
+
+[custom-lib-path]
+custom-lib=/opt/nvidia/deepstream/deepstream/lib/libnvds_infercustomparser.so  # Custom bounding box parser
+
+[parse-bbox-func]
+parse-bbox-func-name=NvDsInferParseYolo
